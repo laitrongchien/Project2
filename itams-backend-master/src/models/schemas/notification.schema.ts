@@ -4,7 +4,7 @@ import { Document } from 'mongoose';
 @Schema()
 export class Notification extends Document {
   @Prop({ default: null })
-  itemId: number;
+  itemId: string;
 
   @Prop({ default: null })
   expiration_date: Date;

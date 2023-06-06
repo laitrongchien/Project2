@@ -32,7 +32,7 @@ export class DigitalContentController {
 
   @Get('get-digital-content-by-id/:id')
   @UseGuards(JwtAllAuthGuard)
-  async getDigitalContentById(@Param('id', ParseIntPipe) id: number) {
+  async getDigitalContentById(@Param('id') id: string) {
     return await this.digitalContentService.getDigitalContentById(id);
   }
 
@@ -58,7 +58,7 @@ export class DigitalContentController {
   @UseGuards(JwtAdminAuthGuard)
   async updateDigitalContent(
     @Body() digitalContentDto: DigitalContentDto,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     return await this.digitalContentService.updateDigitalContent(
       id,
@@ -68,7 +68,7 @@ export class DigitalContentController {
 
   @Delete('delete-digital-content')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteDigitalContent(@Body('id', ParseIntPipe) id: number) {
+  async deleteDigitalContent(@Body('id') id: string) {
     return await this.digitalContentService.deleteDigitalContent(id);
   }
 

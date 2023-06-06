@@ -51,7 +51,7 @@ export class AssetController {
 
   @Get('get-asset-by-id/:id')
   @UseGuards(JwtAdminAuthGuard)
-  async getAssetById(@Param('id', ParseIntPipe) id: number) {
+  async getAssetById(@Param('id') id: string) {
     return await this.assetService.getAssetByAssetId(id);
   }
 
@@ -72,7 +72,7 @@ export class AssetController {
   @UseInterceptors(FileInterceptor('image', imageStorageOptions))
   async saveImage(
     @UploadedFile() file: Express.Multer.File,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     const res = await this.assetService.saveImage(id, file);
     return res;
@@ -80,16 +80,13 @@ export class AssetController {
 
   @Put('update-asset')
   @UseGuards(JwtAdminAuthGuard)
-  async updateAsset(
-    @Body() assetDto: AssetDto,
-    @Body('id', ParseIntPipe) id: number,
-  ) {
+  async updateAsset(@Body() assetDto: AssetDto, @Body('id') id: string) {
     return await this.assetService.updateAsset(id, assetDto);
   }
 
   @Delete('delete-asset')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteAsset(@Body('id', ParseIntPipe) id: number) {
+  async deleteAsset(@Body('id') id: string) {
     return await this.assetService.deleteAsset(id);
   }
 
@@ -114,36 +111,48 @@ export class AssetController {
   @Post('accept-request')
   @UseGuards(JwtAdminAuthGuard)
   async acceptRequest(
-    @Body('id', ParseIntPipe) id: number,
-    @Body('assetId', ParseIntPipe) assetId: number,
+    @Body('id') id: string,
+    @Body('assetId') assetId: string,
   ) {
     return await this.assetService.acceptRequest(id, assetId);
   }
 
   @Post('reject-request')
   @UseGuards(JwtAdminAuthGuard)
-  async rejectRequest(@Body('id', ParseIntPipe) id: number) {
+  async rejectRequest(@Body('id') id: string) {
     return await this.assetService.rejectRequest(id);
   }
 
   @Get('asset-by-category')
   @UseGuards(JwtAdminAuthGuard)
-  async getAssetsByModel(@Query('categoryId') categoryId: number) {
+  async getAssetsByModel(@Query('categoryId') categoryId: string) {
     return await this.assetService.getAssetsByCategory(categoryId);
   }
+
+  @Get('asset-by-department')
+  @UseGuards(JwtAdminAuthGuard)
+  async getAssetsByDepartment(@Query('departmentId') departmentId: string) {
+    return await this.assetService.getAssetsByDepartmentId(departmentId);
+  }
+
+  // @Get('asset-by-department')
+  // @UseGuards(JwtAdminAuthGuard)
+  // async getAssetsByDepartment(@Body('departmentId') departmentId: string) {
+  //   return await this.assetService.getAssetsByDepartmentId(departmentId);
+  // }
 
   /*------------------------ user ------------------------- */
 
   @Get('asset-to-user')
   @UseGuards(JwtAuthGuard)
-  async getAssetToUser(@Request() request) {
-    return await this.assetService.getAssetToUser(request.user.id);
+  async getAssetToUser(@Request() request): Promise<any> {
+    return await this.assetService.getAssetToUser(request.user._id);
   }
 
   @Get('asset-requested')
   @UseGuards(JwtAuthGuard)
   async getAssetRequested(@Request() request) {
-    return await this.assetService.getAssetRequestedByUser(request.user.id);
+    return await this.assetService.getAssetRequestedByUser(request.user._id);
   }
 
   @Post('new-request')
@@ -153,7 +162,7 @@ export class AssetController {
     @Body() newRequest: NewRequestAsset,
   ) {
     return await this.assetService.createNewRequestAsset(
-      request.user.id,
+      request.user._id,
       newRequest,
     );
   }

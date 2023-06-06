@@ -1,11 +1,9 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import Asset from 'src/models/entities/asset.entity';
-import AssetToUser from 'src/models/entities/assetToUser.entity';
-import { RequestAsset } from 'src/models/entities/requestAssest.entity';
-import { AssetRepository } from 'src/models/repositories/asset.repository';
-import { AssetToUserRepository } from 'src/models/repositories/assetToUser.repository';
-import { RequestAssetRepository } from 'src/models/repositories/requestAsset.repository';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AssetSchema } from '../../models/schemas/asset.schema';
+import { AssetToUserSchema } from '../../models/schemas/assetToUser.schema';
+import { RequestAssetSchema } from '../../models/schemas/requestAsset..schema';
+
 import { AdminModule } from '../admin/admin.module';
 import { AssetModelModule } from '../assetModel/assetModel.module';
 import { CategoryModule } from '../category/category.module';
@@ -21,7 +19,11 @@ import { AssetService } from './asset.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Asset, AssetToUser, RequestAsset]),
+    MongooseModule.forFeature([
+      { name: 'Asset', schema: AssetSchema },
+      { name: 'AssetToUser', schema: AssetToUserSchema },
+      { name: 'RequestAsset', schema: RequestAssetSchema },
+    ]),
     UsersModule,
     AdminModule,
     AssetModelModule,
@@ -33,12 +35,7 @@ import { AssetService } from './asset.service';
     forwardRef(() => NotificationModule),
   ],
   controllers: [AssetController],
-  providers: [
-    AssetService,
-    AssetRepository,
-    AssetToUserRepository,
-    RequestAssetRepository,
-  ],
+  providers: [AssetService],
   exports: [AssetService],
 })
 export class AssetModule {}

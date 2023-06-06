@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { Admin } from 'src/models/schemas/admin.schema';
+import { Admin } from '../../models/schemas/admin.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -19,7 +19,7 @@ export class AdminService {
   ) {}
 
   async getAdminByUsername(username: string) {
-    const admin = await this.adminModel.findOne({ username });
+    const admin = await this.adminModel.findOne({ username: username });
 
     if (admin) {
       return admin;
@@ -32,7 +32,7 @@ export class AdminService {
   }
 
   async getAdminById(id: string) {
-    const admin = await this.adminModel.findOne({ id });
+    const admin = await this.adminModel.findById(id);
 
     if (admin) {
       return admin;

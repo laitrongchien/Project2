@@ -43,7 +43,7 @@ export class UserController {
   @Get('get-user-by-id/:id')
   @UseGuards(JwtAdminAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
-  async getUserById(@Param('id', ParseIntPipe) id: number) {
+  async getUserById(@Param('id') id: string) {
     return await this.userService.getUserByUserId(id);
   }
 
@@ -61,16 +61,13 @@ export class UserController {
 
   @Put('update-user')
   @UseGuards(JwtAdminAuthGuard)
-  async updateUser(
-    @Body() userDto: UserDto,
-    @Body('id', ParseIntPipe) id: number,
-  ) {
+  async updateUser(@Body() userDto: UserDto, @Body('id') id: string) {
     return await this.userService.updateUser(id, userDto);
   }
 
   @Delete('delete-user')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteUser(@Body('id', ParseIntPipe) id: number) {
+  async deleteUser(@Body('id') id: string) {
     return await this.userService.deleteUser(id);
   }
 
@@ -80,7 +77,7 @@ export class UserController {
     @Req() request: RequestWithUser,
     @Body() userData: UpdateProfileDto,
   ) {
-    return await this.userService.updateProfile(request.user.id, userData);
+    return await this.userService.updateProfile(request.user._id, userData);
   }
 
   @Post('save-avatar')

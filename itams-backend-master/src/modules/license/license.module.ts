@@ -1,9 +1,7 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import License from 'src/models/entities/license.entity';
-import LicenseToAsset from 'src/models/entities/licenseToAsset.entity';
-import { LicenseRepository } from 'src/models/repositories/license.repository';
-import { LicenseToAssetRepository } from 'src/models/repositories/licenseToAsset.repository';
+import { MongooseModule } from '@nestjs/mongoose';
+import { LicenseSchema } from '../../models/schemas/license.schema';
+import { LicenseToAssetSchema } from '../../models/schemas/licenseToAsset.schema';
 import { AssetModule } from '../asset/asset.module';
 import { CategoryModule } from '../category/category.module';
 import { ManufacturerModule } from '../manufacturer/manufacturer.module';
@@ -14,7 +12,10 @@ import { LicenseService } from './license.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([License, LicenseToAsset]),
+    MongooseModule.forFeature([
+      { name: 'License', schema: LicenseSchema },
+      { name: 'LicenseToAsset', schema: LicenseToAssetSchema },
+    ]),
     forwardRef(() => AssetModule),
     CategoryModule,
     ManufacturerModule,
@@ -22,7 +23,7 @@ import { LicenseService } from './license.service';
     forwardRef(() => NotificationModule),
   ],
   controllers: [LicenseController],
-  providers: [LicenseService, LicenseRepository, LicenseToAssetRepository],
+  providers: [LicenseService],
   exports: [LicenseService],
 })
 export class LicenseModule {}

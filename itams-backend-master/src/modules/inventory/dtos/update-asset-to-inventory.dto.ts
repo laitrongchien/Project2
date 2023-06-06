@@ -4,13 +4,15 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 export class UpdateAssetToInventoryDto {
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
-  assetId: number;
+  // @IsNumber()
+  @IsString()
+  assetId: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
-  newStatusId: number;
+  // @IsNumber()
+  @IsString()
+  newStatusId: string;
 
   @ApiProperty()
   @IsNotEmpty()

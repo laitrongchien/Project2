@@ -1,9 +1,9 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import AdminEntity from 'src/models/entities/admin.entity';
-import Asset from 'src/models/entities/asset.entity';
-import UserEntity from 'src/models/entities/user.entity';
+import { Admin } from '../../models/schemas/admin.schema';
+import { Asset } from '../../models/schemas/asset.schema';
+import { User } from '../../models/schemas/user.schema';
 
 @Injectable()
 export class MailService {
@@ -12,7 +12,7 @@ export class MailService {
     private configService: ConfigService,
   ) {}
 
-  async sendUserAcceptRequest(user: UserEntity, asset: Asset) {
+  async sendUserAcceptRequest(user: User, asset: Asset) {
     const url = `${this.configService.get('FRONTEND')}`;
 
     await this.mailerService.sendMail({
@@ -21,14 +21,14 @@ export class MailService {
       template: './accept',
       context: {
         name: user.name,
-        asset_id: asset.id,
+        asset_id: asset._id,
         asset_name: asset.name,
         url,
       },
     });
   }
 
-  async sendUserRejectRequest(user: UserEntity) {
+  async sendUserRejectRequest(user: User) {
     const url = `${this.configService.get('FRONTEND')}/request-asset`;
 
     await this.mailerService.sendMail({
@@ -42,7 +42,7 @@ export class MailService {
     });
   }
 
-  async sendUserCheckoutAsset(user: UserEntity, asset: Asset) {
+  async sendUserCheckoutAsset(user: User, asset: Asset) {
     const url = `${this.configService.get('FRONTEND')}`;
 
     await this.mailerService.sendMail({
@@ -51,14 +51,14 @@ export class MailService {
       template: './checkout',
       context: {
         name: user.name,
-        asset_id: asset.id,
+        asset_id: asset._id,
         asset_name: asset.name,
         url,
       },
     });
   }
 
-  async sendAdminRequestAsset(user: UserEntity, admin: AdminEntity) {
+  async sendAdminRequestAsset(user: User, admin: Admin) {
     const url = `${this.configService.get('ADMIN')}/request-assets`;
 
     await this.mailerService.sendMail({
@@ -67,7 +67,7 @@ export class MailService {
       template: './request',
       context: {
         user_name: user.name,
-        user_id: user.id,
+        user_id: user._id,
         url,
       },
     });

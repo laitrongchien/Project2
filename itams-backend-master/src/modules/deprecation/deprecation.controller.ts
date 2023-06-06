@@ -27,7 +27,7 @@ export class DeprecationController {
 
   @Get('get-deprecation-by-id')
   @UseGuards(JwtAllAuthGuard)
-  async getDeprecationById(@Body('id', ParseIntPipe) id: number) {
+  async getDeprecationById(@Body('id') id: string) {
     return await this.deprecationService.getDeprecationById(id);
   }
 
@@ -41,14 +41,14 @@ export class DeprecationController {
   @UseGuards(JwtAdminAuthGuard)
   async updateDeprecation(
     @Body() deprecationDto: DeprecationDto,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     return await this.deprecationService.updateDeprecation(id, deprecationDto);
   }
 
   @Delete('delete-deprecation')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteDeprecation(@Body('id', ParseIntPipe) id: number) {
+  async deleteDeprecation(@Body('id') id: string) {
     return await this.deprecationService.deleteDeprecation(id);
   }
 }

@@ -4,7 +4,7 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CheckinSourceCodeDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  sourceCodeToUserId: number;
+  sourceCodeToUserId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()

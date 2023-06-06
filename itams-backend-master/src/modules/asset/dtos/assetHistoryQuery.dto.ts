@@ -1,14 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class AssetHistoryQueryDto {
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
-  assetId: number;
+  // @IsNumber()
+  @IsString()
+  assetId: string;
 
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
-  userId: number;
+  // @IsNumber()
+  @IsString()
+  userId: string;
 }

@@ -4,15 +4,15 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CheckinAssetDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  assetId: number;
+  assetId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  statusId: number;
+  statusId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  departmentId: number;
+  departmentId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()

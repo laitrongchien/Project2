@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { AssetMaintenance } from 'src/models/entities/assetMaintenance.entity';
-import { AssetMaintenanceRepository } from 'src/models/repositories/assetMaintenance.repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { AssetMaintenance } from '../../models/schemas/assetMaintenance.schema';
 import { AssetService } from '../asset/asset.service';
 import { SupplierService } from '../supplier/supplier.service';
 import { AssetMaintenanceDto } from './dtos/assetMaintenance.dto';
@@ -12,26 +12,26 @@ export class AssetMaintenanceService {
   private logger = new Logger(AssetMaintenanceService.name);
 
   constructor(
-    @InjectRepository(AssetMaintenance)
-    private assetMaintenanceRepo: AssetMaintenanceRepository,
+    @InjectModel(AssetMaintenance.name)
+    private assetMaintenanceModel: Model<AssetMaintenance>,
     private assetService: AssetService,
     private supplierService: SupplierService,
   ) {}
 
   async getAllAssetMaintenances(
     assetMaintenanceQueryDto?: AssetMaintenanceQueryDto,
-  ) {
-    const assetMaintenances = await this.assetMaintenanceRepo.find({
-      relations: { asset: true, supplier: true },
-      where: {
-        asset: { id: assetMaintenanceQueryDto.assetId },
-      },
-    });
+  ): Promise<any> {
+    const assetMaintenances = await this.assetMaintenanceModel
+      .find({
+        'asset._id': assetMaintenanceQueryDto.assetId,
+      })
+      .populate('asset')
+      .populate('supplier');
     const res = assetMaintenances.map((assetMaintenance) => {
-      const { asset, supplier, ...rest } = assetMaintenance;
+      const { asset, supplier, ...rest } = assetMaintenance.toObject();
       return {
         ...rest,
-        asset_id: asset?.id,
+        asset_id: asset?._id,
         asset_name: asset?.name,
         supplier: supplier?.name,
       };
@@ -39,8 +39,8 @@ export class AssetMaintenanceService {
     return res;
   }
 
-  async getAssetMaintenanceById(id: number) {
-    const assetMaintenance = await this.assetMaintenanceRepo.findOneBy({ id });
+  async getAssetMaintenanceById(id: string) {
+    const assetMaintenance = await this.assetMaintenanceModel.findById(id);
     return assetMaintenance;
   }
 
@@ -51,7 +51,7 @@ export class AssetMaintenanceService {
     const asset = await this.assetService.getAssetById(
       assetMaintenanceDto.assetId,
     );
-    const assetMaintenance = new AssetMaintenance();
+    const assetMaintenance = new this.assetMaintenanceModel();
     assetMaintenance.start_date = assetMaintenanceDto.start_date;
     assetMaintenance.end_date = assetMaintenanceDto.end_date;
     assetMaintenance.cost = assetMaintenanceDto.cost;
@@ -59,29 +59,29 @@ export class AssetMaintenanceService {
     assetMaintenance.asset = asset;
     assetMaintenance.supplier = supplier;
 
-    await this.assetMaintenanceRepo.save(assetMaintenance);
+    await assetMaintenance.save();
     return assetMaintenance;
   }
 
   async updateAssetMaintenance(
-    id: number,
+    id: string,
     assetMaintenanceDto: AssetMaintenanceDto,
   ) {
-    let toUpdate = await this.assetMaintenanceRepo.findOneBy({ id });
-    let { assetId, supplierId, ...rest } = assetMaintenanceDto;
+    const toUpdate = await this.assetMaintenanceModel.findById(id);
+    const { assetId, supplierId, ...rest } = assetMaintenanceDto;
     const asset = await this.assetService.getAssetById(
       assetMaintenanceDto.assetId,
     );
     const supplier = await this.supplierService.getSupplierById(
       assetMaintenanceDto.supplierId,
     );
-    let updated = Object.assign(toUpdate, rest);
+    const updated = Object.assign(toUpdate, rest);
     updated.asset = asset;
     updated.supplier = supplier;
-    return await this.assetMaintenanceRepo.save(updated);
+    return await updated.save();
   }
 
-  async deleteAssetMaintenance(id: number) {
-    return await this.assetMaintenanceRepo.delete({ id });
+  async deleteAssetMaintenance(id: string) {
+    return await this.assetMaintenanceModel.findByIdAndDelete(id);
   }
 }

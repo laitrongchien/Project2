@@ -1,19 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class SourceCodeToUserQueryDto {
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
-  sourceCodeId: number;
+  @IsString()
+  sourceCodeId: string;
 
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
-  userId: number;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsBoolean()
-  withDeleted: boolean;
+  @IsString()
+  userId: string;
 }

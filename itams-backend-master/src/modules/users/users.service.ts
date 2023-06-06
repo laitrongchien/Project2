@@ -1,38 +1,39 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import UserEntity from 'src/models/entities/user.entity';
-import { UserRepository } from 'src/models/repositories/user.repository';
-import CreateUserDto from './dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import { AVATAR_PATH } from './user.constants';
-import UpdateProfileDto from './dtos/update-profile.dto';
-import { DepartmentService } from '../department/department.service';
+import { InjectModel } from '@nestjs/mongoose';
+import mongoose, { Model } from 'mongoose';
+
+import CreateUserDto from './dtos/create-user.dto';
 import { UserDto } from './dtos/user.dto';
-import { DataSource } from 'typeorm';
-import { FirebaseService } from '../firebase/firebase.service';
 import { UserQueryDto } from './dtos/userQuery.dto';
+import UpdateProfileDto from './dtos/update-profile.dto';
+import { AVATAR_PATH } from './user.constants';
+import { DepartmentService } from '../department/department.service';
+import { FirebaseService } from '../firebase/firebase.service';
+import { User } from 'src/models/schemas/user.schema';
+import { log } from 'console';
 
 @Injectable()
 export class UsersService {
   private logger = new Logger(UsersService.name);
 
   constructor(
-    private dataSource: DataSource,
-    @InjectRepository(UserEntity)
-    private userRepo: UserRepository,
+    @InjectModel(User.name)
+    private readonly userModel: Model<User>,
     private departmentService: DepartmentService,
     private firebaseService: FirebaseService,
   ) {}
 
-  async getAll(userQuery?: UserQueryDto) {
-    const users = await this.userRepo.find({
-      relations: { department: true, assetToUsers: true },
-      where: {
-        department: { id: userQuery.departmentId },
-      },
-    });
+  async getAll(userQuery?: UserQueryDto): Promise<any> {
+    const users = await this.userModel
+      .find({
+        // 'department._id': userQuery.departmentId,
+        department: { _id: userQuery.departmentId },
+      })
+      .populate('department')
+      .populate('assetToUsers');
     const res = users.map((user) => {
-      const { department, assetToUsers, password, ...rest } = user;
+      const { department, assetToUsers, password, ...rest } = user.toObject();
       return {
         ...rest,
         department: department?.name,
@@ -42,130 +43,138 @@ export class UsersService {
     return res;
   }
 
-  async getUserByUserId(id: number) {
-    const user = await this.userRepo.findOne({
-      where: { id },
-      relations: { department: true },
-    });
-    const { department, password, ...rest } = user;
-    return { ...rest, department: department.name };
+  async getUserByUserId(id: string): Promise<any> {
+    const user = await this.userModel.findById(id).populate('department');
+    const { department, password, ...rest } = user.toObject();
+    return { ...rest, department: department?.name };
   }
 
-  async createNewUser(userDto: UserDto) {
+  async createNewUser(userDto: UserDto): Promise<any> {
     const department = await this.departmentService.getDepartmentById(
       userDto.departmentId,
     );
 
-    const user = new UserEntity();
-    user.name = userDto.name;
-    user.username = userDto.username;
-    user.password = await bcrypt.hash(userDto.password, 10);
-    user.phone = userDto.phone;
-    user.email = userDto.email;
-    user.birthday = userDto.birthday;
-    user.avatar = userDto.avatar;
-    user.department = department;
+    // console.log(department);
+    // Update code
 
-    await this.userRepo.save(user);
+    const userData = {
+      name: userDto.name,
+      username: userDto.username,
+      password: await bcrypt.hash(userDto.password, 10),
+      phone: userDto.phone,
+      email: userDto.email,
+      birthday: userDto.birthday,
+      avatar: userDto.avatar,
+      department: department,
+    };
+    const user = new this.userModel(userData);
+    await user.save();
     return user;
   }
 
   async importUser(userDtos: UserDto[]) {
-    await this.dataSource.transaction(async (manager) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
       await Promise.all(
         userDtos.map(async (userDto: UserDto) => {
-          const user = new UserEntity();
-          let { password, departmentId, ...rest } = userDto;
+          const user = new User();
+          const { password, departmentId, ...rest } = userDto;
           Object.assign(user, rest);
           const department = await this.departmentService.getDepartmentById(
             userDto.departmentId,
           );
           user.password = await bcrypt.hash(userDto.password, 10);
           user.department = department;
-          await manager.save(user);
+          await user.save({ session });
         }),
       );
-    });
+      await session.commitTransaction();
+    } catch (err) {
+      await session.abortTransaction();
+      throw err;
+    } finally {
+      session.endSession();
+    }
     return userDtos;
   }
 
-  async updateUser(id: number, userDto: UserDto) {
-    let toUpdate = await this.userRepo.findOneBy({ id });
-    let { password, departmentId, ...rest } = userDto;
+  async updateUser(id: string, userDto: UserDto) {
+    const toUpdate = await this.userModel.findById(id);
+    const { password, departmentId, ...rest } = userDto;
     const department = await this.departmentService.getDepartmentById(
       userDto.departmentId,
     );
-    let updated = Object.assign(toUpdate, rest);
+    const updated = Object.assign(toUpdate, rest);
     updated.password = await bcrypt.hash(userDto.password, 10);
     updated.department = department;
-    return await this.userRepo.save(updated);
+    return await updated.save();
   }
 
-  async deleteUser(id: number) {
-    const toRemove = await this.userRepo.findOneOrFail({
-      where: { id },
-      relations: {
-        assetToUsers: true,
-        sourceCodeToUsers: true,
-        requestAssets: true,
-      },
-    });
-    return await this.userRepo.softRemove(toRemove);
+  async deleteUser(id: string) {
+    // const toRemove = await this.userRepo.findOneOrFail({
+    //   where: { id },
+    //   relations: {
+    //     assetToUsers: true,
+    //     sourceCodeToUsers: true,
+    //     requestAssets: true,
+    //   },
+    // });
+    // return await this.userRepo.softRemove(toRemove);
+    return this.userModel.findByIdAndDelete(id);
   }
 
   async getUserByUsername(username: string) {
-    const user = await this.userRepo.findOneBy({ username });
+    const user = await this.userModel.findOne({ username });
 
     if (user) {
       return user;
     }
   }
 
-  async getUserById(id: number) {
-    const user = await this.userRepo.findOneBy({ id });
+  async getUserById(id: string) {
+    const user = await this.userModel.findById(id);
     return user;
   }
 
-  async saveAvatar(user: UserEntity, file: Express.Multer.File) {
+  async saveAvatar(user: User, file: Express.Multer.File) {
     // upload ảnh lên storage
     const avatar = await this.uploadImage(file, AVATAR_PATH);
     // cập nhật db
-    await this.userRepo.update({ id: user.id }, { avatar });
-    const newUser = await this.getUserById(user.id);
+    await this.userModel.updateOne({ _id: user._id }, { avatar });
+    const newUser = await this.getUserById(user._id);
     return newUser;
   }
 
   async uploadImage(file: Express.Multer.File, path: string) {
-    let url: string = await this.firebaseService.uploadFile(file, path);
+    const url: string = await this.firebaseService.uploadFile(file, path);
     return url;
   }
 
   async createUser(createUserDto: CreateUserDto) {
-    const newUser = new UserEntity();
+    const newUser = new this.userModel();
     newUser.username = createUserDto.username;
     newUser.password = createUserDto.password;
 
-    await this.userRepo.save(newUser);
-
-    return newUser;
+    return await newUser.save();
   }
 
-  async updateProfile(userId: number, userData: UpdateProfileDto) {
-    let toUpdate = await this.getUserById(userId);
+  async updateProfile(userId: string, userData: UpdateProfileDto) {
+    const toUpdate = await this.getUserById(userId);
 
     // TODO why delete?
     delete toUpdate.password;
     delete toUpdate.username;
 
-    let updated = Object.assign(toUpdate, userData);
-    return await this.userRepo.save(updated);
+    const updated = Object.assign(toUpdate, userData);
+    return await updated.save();
   }
 
   async setNewPassword(username: string, password: string) {
     const user = await this.getUserByUsername(username);
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await this.userRepo.update(user.id, {
+    await this.userModel.findByIdAndUpdate(user._id, {
       password: hashedPassword,
     });
   }

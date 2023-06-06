@@ -3,6 +3,7 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Category } from './category.schema';
 import { Manufacturer } from './manufacturer.schema';
 import { Supplier } from './supplier.schema';
+import { LicenseToAsset } from './licenseToAsset.schema';
 
 @Schema()
 export class License extends Document {
@@ -35,6 +36,11 @@ export class License extends Document {
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Supplier' })
   supplier: Supplier;
+
+  @Prop({
+    type: [{ type: MongooseSchema.Types.ObjectId, ref: 'LicenseToAsset' }],
+  })
+  licenseToAssets: LicenseToAsset[];
 }
 
 export const LicenseSchema = SchemaFactory.createForClass(License);

@@ -37,5 +37,5 @@ export class UserDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  departmentId: number;
+  departmentId: string;
 }

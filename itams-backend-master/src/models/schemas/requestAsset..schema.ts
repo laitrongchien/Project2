@@ -9,7 +9,7 @@ export class RequestAsset extends Document {
   status: string;
 
   @Prop({ default: null })
-  assetId: number;
+  assetId: string;
 
   @Prop({ default: null })
   note: string;

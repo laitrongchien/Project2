@@ -5,7 +5,6 @@ import {
   Post,
   Put,
   Body,
-  ParseIntPipe,
   Delete,
   Param,
   UseInterceptors,
@@ -32,7 +31,7 @@ export class ManufacturerController {
 
   @Get('get-manufacturer-by-id/:id')
   @UseGuards(JwtAllAuthGuard)
-  async getManufacturerById(@Param('id', ParseIntPipe) id: number) {
+  async getManufacturerById(@Param('id') id: string) {
     return await this.manufacturerService.getManufacturerById(id);
   }
 
@@ -49,7 +48,7 @@ export class ManufacturerController {
   @UseInterceptors(FileInterceptor('image', imageStorageOptions))
   async saveImage(
     @UploadedFile() file: Express.Multer.File,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     const res = await this.manufacturerService.saveImage(id, file);
     return res;
@@ -59,7 +58,7 @@ export class ManufacturerController {
   @UseGuards(JwtAdminAuthGuard)
   async updateManufacturer(
     @Body() manufacturerDto: ManufacturerDto,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     return await this.manufacturerService.updateManufacturer(
       id,
@@ -69,7 +68,7 @@ export class ManufacturerController {
 
   @Delete('delete-manufacturer')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteManufacturer(@Body('id', ParseIntPipe) id: number) {
+  async deleteManufacturer(@Body('id') id: string) {
     return await this.manufacturerService.deleteManufacturer(id);
   }
 }

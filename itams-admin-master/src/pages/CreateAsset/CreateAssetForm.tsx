@@ -87,9 +87,9 @@ function CreateAssetForm(props: any) {
   const handleSubmit = async (newAsset: NewAsset) => {
     setLoading(true);
     try {
-      if (action === Actions.UPDATE) await updateAsset(data.id, newAsset);
+      if (action === Actions.UPDATE) await updateAsset(data._id, newAsset);
       else await createNewAsset(newAsset);
-      if (image.length > 0) await saveImage(data.id, image[0].file);
+      if (image.length > 0) await saveImage(data._id, image[0].file);
       await getNotifications();
       navigate(-1);
       toast.success(

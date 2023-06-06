@@ -5,7 +5,6 @@ import {
   Post,
   Put,
   Body,
-  ParseIntPipe,
   Delete,
   Param,
 } from '@nestjs/common';
@@ -28,7 +27,7 @@ export class StatusController {
 
   @Get('get-status-by-id/:id')
   @UseGuards(JwtAllAuthGuard)
-  async getStatusById(@Param('id', ParseIntPipe) id: number) {
+  async getStatusById(@Param('id') id: string) {
     return await this.statusService.getStatusById(id);
   }
 
@@ -40,16 +39,13 @@ export class StatusController {
 
   @Put('update-status')
   @UseGuards(JwtAdminAuthGuard)
-  async updateStatus(
-    @Body() statusDto: StatusDto,
-    @Body('id', ParseIntPipe) id: number,
-  ) {
+  async updateStatus(@Body() statusDto: StatusDto, @Body('id') id: string) {
     return await this.statusService.updateStatus(id, statusDto);
   }
 
   @Delete('delete-status')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteStatus(@Body('id', ParseIntPipe) id: number) {
+  async deleteStatus(@Body('id') id: string) {
     return await this.statusService.deleteStatus(id);
   }
 }

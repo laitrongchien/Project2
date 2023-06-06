@@ -4,11 +4,11 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CheckoutDigitalContentDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  digitalContentId: number;
+  digitalContentId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  sourceCodeId: number;
+  sourceCodeId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()

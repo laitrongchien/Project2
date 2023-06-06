@@ -32,7 +32,7 @@ export class AssetMaintenanceController {
 
   @Get('get-asset-maintenance-by-id')
   @UseGuards(JwtAllAuthGuard)
-  async getAssetMaintenanceById(@Body('id', ParseIntPipe) id: number) {
+  async getAssetMaintenanceById(@Body('id') id: string) {
     return await this.assetMaintenanceService.getAssetMaintenanceById(id);
   }
 
@@ -50,7 +50,7 @@ export class AssetMaintenanceController {
   @UseGuards(JwtAdminAuthGuard)
   async updateAssetMaintenance(
     @Body() assetMaintenanceDto: AssetMaintenanceDto,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     return await this.assetMaintenanceService.updateAssetMaintenance(
       id,
@@ -60,7 +60,7 @@ export class AssetMaintenanceController {
 
   @Delete('delete-asset-maintenance')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteAssetMaintenance(@Body('id', ParseIntPipe) id: number) {
+  async deleteAssetMaintenance(@Body('id') id: string) {
     return await this.assetMaintenanceService.deleteAssetMaintenance(id);
   }
 }

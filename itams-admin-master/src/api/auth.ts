@@ -11,6 +11,7 @@ export const login = async (username: string, password: string) => {
     password,
   });
   window.localStorage.setItem('access-token-admin', data.data.access_token);
+  console.log(data)
   return data;
 };
 

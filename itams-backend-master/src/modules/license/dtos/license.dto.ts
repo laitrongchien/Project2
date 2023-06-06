@@ -30,13 +30,13 @@ export class LicenseDto {
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  categoryId: number;
+  categoryId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  manufacturerId: number;
+  manufacturerId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  supplierId: number;
+  supplierId: string;
 }

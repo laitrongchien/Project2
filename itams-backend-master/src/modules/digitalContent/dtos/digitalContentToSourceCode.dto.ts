@@ -1,19 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class DigitalContentToSourceCodeQueryDto {
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
-  digitalContentId: number;
+  // @IsNumber()
+  @IsString()
+  digitalContentId: string;
 
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
+  // @IsNumber()
+  @IsString()
   sourceCodeId: number;
 
-  @ApiProperty()
-  @IsOptional()
-  @IsBoolean()
-  withDeleted: boolean;
+  // @ApiProperty()
+  // @IsOptional()
+  // @IsBoolean()
+  // withDeleted: boolean;
 }

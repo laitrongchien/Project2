@@ -9,5 +9,5 @@ export class DepartmentDto {
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  locationId: number;
+  locationId: string;
 }

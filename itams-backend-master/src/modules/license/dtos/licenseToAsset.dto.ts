@@ -1,19 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class LicenseToAssetQueryDto {
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
-  assetId: number;
+  @IsString()
+  assetId: string;
 
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
-  licenseId: number;
+  @IsString()
+  licenseId: string;
 
-  @ApiProperty()
-  @IsOptional()
-  @IsBoolean()
-  withDeleted: boolean;
+  // @ApiProperty()
+  // @IsOptional()
+  // @IsBoolean()
+  // withDeleted: boolean;
 }

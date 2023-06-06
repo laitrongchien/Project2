@@ -1,14 +1,17 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Manufacturer } from 'src/models/entities/manufacturer.entity';
-import { ManufacturerRepository } from 'src/models/repositories/manufacturer.repository';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ManufacturerSchema } from '../../models/schemas/manufacturer.schema';
 import { ManufacturerController } from './manufacturer.controller';
 import { ManufacturerService } from './manufacturer.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Manufacturer])],
+  imports: [
+    MongooseModule.forFeature([
+      { name: 'Manufacturer', schema: ManufacturerSchema },
+    ]),
+  ],
   controllers: [ManufacturerController],
-  providers: [ManufacturerService, ManufacturerRepository],
+  providers: [ManufacturerService],
   exports: [ManufacturerService],
 })
 export class ManufacturerModule {}

@@ -34,7 +34,7 @@ export class AssetModelController {
 
   @Get('get-asset-model-by-id/:id')
   @UseGuards(JwtAllAuthGuard)
-  async getAssetModelById(@Param('id', ParseIntPipe) id: number) {
+  async getAssetModelById(@Param('id') id: string) {
     return await this.assetModelService.getAssetModelByAssetModelId(id);
   }
 
@@ -49,7 +49,7 @@ export class AssetModelController {
   @UseInterceptors(FileInterceptor('image', imageStorageOptions))
   async saveImage(
     @UploadedFile() file: Express.Multer.File,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     const res = await this.assetModelService.saveImage(id, file);
     return res;
@@ -59,14 +59,14 @@ export class AssetModelController {
   @UseGuards(JwtAdminAuthGuard)
   async updateAssetModel(
     @Body() assetModelDto: AssetModelDto,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     return await this.assetModelService.updateAssetModel(id, assetModelDto);
   }
 
   @Delete('delete-asset-model')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteAssetModel(@Body('id', ParseIntPipe) id: number) {
+  async deleteAssetModel(@Body('id') id: string) {
     return await this.assetModelService.deleteAssetModel(id);
   }
 }

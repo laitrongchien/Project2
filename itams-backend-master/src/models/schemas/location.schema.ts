@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Department } from './department.schema';
 
 @Schema()
 export class Location extends Document {
@@ -7,7 +8,12 @@ export class Location extends Document {
   name: string;
 
   @Prop({ default: null })
-  image: string;
+  address: string;
+
+  @Prop({
+    type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Department' }],
+  })
+  departments: Department[];
 }
 
 export const LocationSchema = SchemaFactory.createForClass(Location);

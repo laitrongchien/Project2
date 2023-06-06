@@ -17,7 +17,7 @@ export class InventoryDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  departmentId: number;
+  departmentId: string;
 
   @ApiProperty()
   @IsString()

@@ -4,6 +4,7 @@ dotenv.config();
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { TransformIdInterceptor } from './interceptors/transform-id.interceptors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,6 +17,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
+  app.useGlobalInterceptors(new TransformIdInterceptor());
   await app.listen(process.env.PORT || 8000);
+  // console.log(process.env.JWT_ACCESS_TOKEN_SECRET);
 }
 bootstrap();

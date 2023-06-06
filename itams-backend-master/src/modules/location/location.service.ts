@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Location } from 'src/models/entities/location.entity';
-import { LocationRepository } from 'src/models/repositories/location.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Location } from '../../models/schemas/location.schema';
 import { LocationDto } from './dtos/location';
 
 @Injectable()
@@ -9,15 +9,14 @@ export class LocationService {
   private logger = new Logger(LocationService.name);
 
   constructor(
-    @InjectRepository(Location) private locationRepo: LocationRepository,
+    @InjectModel(Location.name)
+    private readonly locationModel: Model<Location>,
   ) {}
 
-  async getAllLocations() {
-    const locations = await this.locationRepo.find({
-      relations: { departments: true },
-    });
+  async getAllLocations(): Promise<any> {
+    const locations = await this.locationModel.find();
     const res = locations.map((location) => {
-      const { departments, ...rest } = location;
+      const { departments, ...rest } = location.toObject();
       return {
         ...rest,
         numOfDepartments: departments?.length ?? 0,
@@ -26,42 +25,39 @@ export class LocationService {
     return res;
   }
 
-  async getLocationById(id: number) {
-    const location = await this.locationRepo.findOneBy({ id });
+  async getLocationById(id: string) {
+    const location = await this.locationModel.findById(id);
     return location;
   }
 
   async createNewLocation(locationDto: LocationDto) {
-    if (await this.locationRepo.findOneBy({ name: locationDto.name }))
+    if (await this.locationModel.findOne({ name: locationDto.name }))
       throw new HttpException(
         'This value already exists',
         HttpStatus.BAD_REQUEST,
       );
-    const location = new Location();
-    location.name = locationDto.name;
-    location.address = locationDto.address;
-    await this.locationRepo.save(location);
-    return location;
+    return await this.locationModel.create(locationDto);
   }
 
-  async updateLocation(id: number, locationDto: LocationDto) {
+  async updateLocation(id: string, locationDto: LocationDto) {
     if (
-      (await this.locationRepo.findOneBy({ id }))?.name !== locationDto.name &&
-      (await this.locationRepo.findOneBy({ name: locationDto.name }))
+      (await this.locationModel.findById(id))?.name !== locationDto.name &&
+      (await this.locationModel.findOne({ name: locationDto.name }))
     )
       throw new HttpException(
         'This value already exists',
         HttpStatus.BAD_REQUEST,
       );
-    let toUpdate = await this.locationRepo.findOneBy({ id });
+    const toUpdate = await this.locationModel.findById(id);
 
-    let updated = Object.assign(toUpdate, locationDto);
-    return await this.locationRepo.save(updated);
+    toUpdate.name = locationDto.name;
+    toUpdate.address = locationDto.address;
+    return await toUpdate.save();
   }
 
-  async deleteLocation(id: number) {
+  async deleteLocation(id: string): Promise<any> {
     try {
-      return await this.locationRepo.delete({ id });
+      return await this.locationModel.findByIdAndDelete(id);
     } catch (err) {
       throw new HttpException(
         'This value is still in use',

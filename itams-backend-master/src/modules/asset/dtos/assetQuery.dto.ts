@@ -1,29 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class AssetQueryDto {
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
-  assetModelId: number;
+  @IsString()
+  assetModelId: string;
 
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
-  departmentId: number;
+  @IsString()
+  departmentId: string;
 
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
-  statusId: number;
+  @IsString()
+  statusId: string;
 
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
-  supplierId: number;
+  @IsString()
+  supplierId: string;
 
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
-  userId: number;
+  @IsString()
+  userId: string;
 }

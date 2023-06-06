@@ -4,7 +4,7 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CheckinLicenseDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  licenseToAssetId: number;
+  licenseToAssetId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()

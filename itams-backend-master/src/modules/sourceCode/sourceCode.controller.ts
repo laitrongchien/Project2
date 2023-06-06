@@ -5,7 +5,6 @@ import {
   Post,
   Put,
   Body,
-  ParseIntPipe,
   Delete,
   Param,
   Query,
@@ -32,7 +31,7 @@ export class SourceCodeController {
 
   @Get('get-source-code-by-id/:id')
   @UseGuards(JwtAllAuthGuard)
-  async getSourceCodeById(@Param('id', ParseIntPipe) id: number) {
+  async getSourceCodeById(@Param('id') id: string) {
     return await this.sourceCodeService.getSourceCodeById(id);
   }
 
@@ -56,14 +55,14 @@ export class SourceCodeController {
   @UseGuards(JwtAdminAuthGuard)
   async updateSourceCode(
     @Body() sourceCodeDto: SourceCodeDto,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     return await this.sourceCodeService.updateSourceCode(id, sourceCodeDto);
   }
 
   @Delete('delete-source-code')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteSourceCode(@Body('id', ParseIntPipe) id: number) {
+  async deleteSourceCode(@Body('id') id: string) {
     return await this.sourceCodeService.deleteSourceCode(id);
   }
 

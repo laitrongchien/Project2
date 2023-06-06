@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import AssetModel from 'src/models/entities/assetModel.entity';
-import { AssetModelRepository } from 'src/models/repositories/assetModel.repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { AssetModel } from '../../models/schemas/assetModel.schema';
 import { CategoryService } from '../category/category.service';
 import { FirebaseService } from '../firebase/firebase.service';
 import { ManufacturerService } from '../manufacturer/manufacturer.service';
@@ -14,22 +14,26 @@ export class AssetModelService {
   private logger = new Logger(AssetModelService.name);
 
   constructor(
-    @InjectRepository(AssetModel) private assetModelRepo: AssetModelRepository,
+    @InjectModel(AssetModel.name)
+    private readonly assetModelModel: Model<AssetModel>,
     private categoryService: CategoryService,
     private manufacturerService: ManufacturerService,
     private firebaseService: FirebaseService,
   ) {}
 
-  async getAllAssetModels(assetModelQuery?: AssetModelQueryDto) {
-    const assetModels = await this.assetModelRepo.find({
-      relations: { assets: true, category: true, manufacturer: true },
-      where: {
-        category: { id: assetModelQuery.categoryId },
-        manufacturer: { id: assetModelQuery.manufacturerId },
-      },
-    });
+  async getAllAssetModels(assetModelQuery?: AssetModelQueryDto): Promise<any> {
+    const assetModels = await this.assetModelModel
+      .find({
+        // 'category._id': assetModelQuery.categoryId,
+        // 'manufacturer._id': assetModelQuery.manufacturerId,
+        category: { _id: assetModelQuery.categoryId },
+        manufacturer: { _id: assetModelQuery.manufacturerId },
+      })
+      .populate('assets')
+      .populate('category')
+      .populate('manufacturer');
     const res = assetModels.map((assetModel) => {
-      const { assets, category, manufacturer, ...rest } = assetModel;
+      const { assets, category, manufacturer, ...rest } = assetModel.toObject();
       return {
         ...rest,
         numOfAssets: assets.length,
@@ -40,12 +44,12 @@ export class AssetModelService {
     return res;
   }
 
-  async getAssetModelByAssetModelId(id: number) {
-    const assetModel = await this.assetModelRepo.findOne({
-      where: { id },
-      relations: { category: true, manufacturer: true },
-    });
-    const { category, manufacturer, ...rest } = assetModel;
+  async getAssetModelByAssetModelId(id: string): Promise<any> {
+    const assetModel = await this.assetModelModel
+      .findById(id)
+      .populate('category')
+      .populate('manufacturer');
+    const { category, manufacturer, ...rest } = assetModel.toObject();
     return {
       ...rest,
       category: category?.name,
@@ -53,13 +57,13 @@ export class AssetModelService {
     };
   }
 
-  async getAssetModelById(id: number) {
-    const assetModel = await this.assetModelRepo.findOneBy({ id });
+  async getAssetModelById(id: string) {
+    const assetModel = await this.assetModelModel.findById(id);
     return assetModel;
   }
 
   async createNewAssetModel(assetModelDto: AssetModelDto) {
-    if (await this.assetModelRepo.findOneBy({ name: assetModelDto.name }))
+    if (await this.assetModelModel.findOne({ name: assetModelDto.name }))
       throw new HttpException(
         'This value already exists',
         HttpStatus.BAD_REQUEST,
@@ -71,50 +75,52 @@ export class AssetModelService {
       assetModelDto.manufacturerId,
     );
 
-    const assetModel = new AssetModel();
+    const assetModel = new this.assetModelModel();
     assetModel.name = assetModelDto.name;
     assetModel.category = category;
     assetModel.manufacturer = manufacturer;
     assetModel.cpe = this.createCPE(manufacturer.name, assetModelDto.name);
-    await this.assetModelRepo.save(assetModel);
-    return assetModel;
+    return await assetModel.save();
   }
 
-  async saveImage(id: number, file: Express.Multer.File) {
+  async saveImage(id: string, file: Express.Multer.File) {
     // upload ảnh lên storage
     const image = await this.firebaseService.uploadFile(file, IMAGE_PATH);
     // cập nhật db
-    return await this.assetModelRepo.update({ id }, { image });
+    return await this.assetModelModel.findByIdAndUpdate(id, { image: image });
   }
 
-  async updateAssetModel(id: number, assetModelDto: AssetModelDto) {
+  async updateAssetModel(id: string, assetModelDto: AssetModelDto) {
     if (
-      (await this.assetModelRepo.findOneBy({ id }))?.name !==
-        assetModelDto.name &&
-      (await this.assetModelRepo.findOneBy({ name: assetModelDto.name }))
+      (await this.assetModelModel.findById(id))?.name !== assetModelDto.name &&
+      (await this.assetModelModel.findOne({ name: assetModelDto.name }))
     )
       throw new HttpException(
         'This value already exists',
         HttpStatus.BAD_REQUEST,
       );
-    let toUpdate = await this.assetModelRepo.findOneBy({ id });
-    let { categoryId, manufacturerId, ...rest } = assetModelDto;
+    const toUpdate = await this.assetModelModel.findById(id);
+    if (!toUpdate) {
+      throw new Error('Asset model document not found');
+    }
+    const { categoryId, manufacturerId, ...rest } = assetModelDto;
     const category = await this.categoryService.getCategoryById(
       assetModelDto.categoryId,
     );
     const manufacturer = await this.manufacturerService.getManufacturerById(
       assetModelDto.manufacturerId,
     );
-    let updated = Object.assign(toUpdate, rest);
+    const updated = Object.assign(toUpdate, rest);
+    // updated.name = assetModelDto.name;
     updated.category = category;
     updated.manufacturer = manufacturer;
     updated.cpe = this.createCPE(manufacturer.name, assetModelDto.name);
-    return await this.assetModelRepo.save(updated);
+    return await updated.save();
   }
 
-  async deleteAssetModel(id: number) {
+  async deleteAssetModel(id: string) {
     try {
-      return await this.assetModelRepo.delete({ id });
+      return await this.assetModelModel.findByIdAndDelete(id);
     } catch (err) {
       throw new HttpException(
         'This value is still in use',
@@ -130,11 +136,15 @@ export class AssetModelService {
   }
 
   /*------------------------ cron ------------------------- */
-  async getAllAssetModelsByCategory(categoryId: number) {
-    const assetModels: AssetModel[] = await this.assetModelRepo.find({
-      where: { category: { id: categoryId } },
-      relations: { assets: true, category: true, manufacturer: true },
-    });
+  async getAllAssetModelsByCategory(categoryId: string) {
+    const assetModels: AssetModel[] = await this.assetModelModel
+      .find({
+        // 'category._id': categoryId,
+        category: { _id: categoryId },
+      })
+      .populate('assets')
+      .populate('category')
+      .populate('manufacturer');
     return assetModels;
   }
 }

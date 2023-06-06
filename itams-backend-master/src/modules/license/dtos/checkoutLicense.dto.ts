@@ -4,11 +4,11 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CheckoutLicenseDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  licenseId: number;
+  licenseId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  assetId: number;
+  assetId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()

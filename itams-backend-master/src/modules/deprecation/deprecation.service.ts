@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import Deprecation from '../../models/entities/deprecation.entity';
-import { DeprecationRepository } from '../../models/repositories/deprecation.repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Deprecation } from '../../models/schemas/deprecation.schema';
 import { CategoryService } from '../category/category.service';
 import { DeprecationDto } from './dtos/deprecation.dto';
 
@@ -10,17 +10,17 @@ export class DeprecationService {
   private logger = new Logger(DeprecationService.name);
 
   constructor(
-    @InjectRepository(Deprecation)
-    private deprecationRepo: DeprecationRepository,
+    @InjectModel(Deprecation.name)
+    private deprecationModel: Model<Deprecation>,
     private categoryService: CategoryService,
   ) {}
 
-  async getAllDeprecations() {
-    const deprecations = await this.deprecationRepo.find({
-      relations: { category: true },
-    });
+  async getAllDeprecations(): Promise<any> {
+    const deprecations = await this.deprecationModel
+      .find()
+      .populate('category');
     const res = deprecations.map((deprecation) => {
-      const { category, ...rest } = deprecation;
+      const { category, ...rest } = deprecation.toObject();
       return {
         ...rest,
         category: category.name,
@@ -29,42 +29,46 @@ export class DeprecationService {
     return res;
   }
 
-  async getDeprecationById(id: number) {
-    const deprecation = await this.deprecationRepo.findOneBy({ id });
+  async getDeprecationById(id: string) {
+    const deprecation = await this.deprecationModel.findById(id);
     return deprecation;
   }
 
   async createNewDeprecation(deprecationDto: DeprecationDto) {
     if (
-      await this.deprecationRepo.findOne({
-        where: { category: { id: deprecationDto.categoryId } },
+      await this.deprecationModel.findOne({
+        // 'category._id': deprecationDto.categoryId,
+        category: { _id: deprecationDto.categoryId },
       })
     )
       throw new HttpException(
         'This category has been set',
         HttpStatus.BAD_REQUEST,
       );
-    const deprecation = new Deprecation();
+    const deprecation = new this.deprecationModel();
     deprecation.name = deprecationDto.name;
     deprecation.months = deprecationDto.months;
     const category = await this.categoryService.getCategoryById(
       deprecationDto.categoryId,
     );
     deprecation.category = category;
-    await this.deprecationRepo.save(deprecation);
+    await deprecation.save();
     return deprecation;
   }
 
-  async updateDeprecation(id: number, deprecationDto: DeprecationDto) {
+  async updateDeprecation(id: string, deprecationDto: DeprecationDto) {
     try {
-      let toUpdate = await this.deprecationRepo.findOneBy({ id });
+      const toUpdate = await this.deprecationModel.findById(id);
+      if (!toUpdate) {
+        throw new Error('Deprecation document not found');
+      }
 
-      let updated = Object.assign(toUpdate, deprecationDto);
+      const updated = Object.assign(toUpdate, deprecationDto);
       const category = await this.categoryService.getCategoryById(
         deprecationDto.categoryId,
       );
       updated.category = category;
-      return await this.deprecationRepo.save(updated);
+      return await updated.save();
     } catch (err) {
       throw new HttpException(
         'This category has been set',
@@ -73,15 +77,15 @@ export class DeprecationService {
     }
   }
 
-  async deleteDeprecation(id: number) {
-    return await this.deprecationRepo.delete({ id });
+  async deleteDeprecation(id: string) {
+    return await this.deprecationModel.findByIdAndDelete(id);
   }
 
   /*------------------------ cron ------------------------- */
   async getAllDeprecationsForCron() {
-    const deprecations = await this.deprecationRepo.find({
-      relations: { category: true },
-    });
+    const deprecations = await this.deprecationModel
+      .find()
+      .populate('category');
     return deprecations;
   }
 }

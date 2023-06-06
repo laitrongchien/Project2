@@ -10,6 +10,7 @@ import axios from './axios';
 
 export const getAllAssets = async (assetQuery?: AssetQuery) => {
   const response = await axios.get('/asset/all-assets', { params: assetQuery });
+  console.log(response.data);
   return response.data;
 };
 

@@ -1,9 +1,8 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DigitalContent } from 'src/models/entities/digitalContent.entity';
-import DigitalContentToSourceCode from 'src/models/entities/digitalContentToSourceCode.entity';
-import { DigitalContentRepository } from 'src/models/repositories/digitalContent.repository';
-import { DigitalContentToSourceCodeRepository } from 'src/models/repositories/digitalContentToSourceCode.repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { DigitalContent } from '../../models/schemas/digitalContent.schema';
+import { DigitalContentToSourceCode } from '../../models/schemas/digitalContentToSourceCode.schema';
 import { SourceCodeService } from '../sourceCode/sourceCode.service';
 import { CheckinDigitalContentDto } from './dtos/checkinDigitalContent.dto';
 import { CheckoutDigitalContentDto } from './dtos/checkoutDigitalContent.dto';
@@ -15,44 +14,54 @@ export class DigitalContentService {
   private logger = new Logger(DigitalContentService.name);
 
   constructor(
-    @InjectRepository(DigitalContent)
-    private digitalContentRepo: DigitalContentRepository,
-    @InjectRepository(DigitalContentToSourceCode)
-    private digitalContentToSourceCodeRepo: DigitalContentToSourceCodeRepository,
+    @InjectModel(DigitalContent.name)
+    private digitalContentModel: Model<DigitalContent>,
+    @InjectModel(DigitalContentToSourceCode.name)
+    private digitalContentToSourceCodeModel: Model<DigitalContentToSourceCode>,
     private sourceCodeService: SourceCodeService,
   ) {}
 
   async getAllDigitalContents() {
-    const digitalContents = await this.digitalContentRepo.find();
+    const digitalContents = await this.digitalContentModel.find();
     return digitalContents;
   }
 
-  async getDigitalContentById(id: number) {
-    const digitalContent = await this.digitalContentRepo.findOneBy({ id });
+  async getDigitalContentById(id: string) {
+    const digitalContent = await this.digitalContentModel.findById(id);
     return digitalContent;
   }
 
   async getDigitalContentToSourceCode(
     digitalContentToSourceCodeDto?: DigitalContentToSourceCodeQueryDto,
-  ) {
-    const sourceCodeToUsers = await this.digitalContentToSourceCodeRepo.find({
-      relations: {
-        sourceCode: true,
-        digitalContent: true,
-      },
-      where: {
-        sourceCode: { id: digitalContentToSourceCodeDto.sourceCodeId },
-        digitalContent: { id: digitalContentToSourceCodeDto.digitalContentId },
-      },
-      withDeleted: digitalContentToSourceCodeDto.withDeleted,
-    });
+  ): Promise<any> {
+    // const sourceCodeToUsers = await this.digitalContentToSourceCodeRepo.find({
+    //   relations: {
+    //     sourceCode: true,
+    //     digitalContent: true,
+    //   },
+    //   where: {
+    //     sourceCode: { id: digitalContentToSourceCodeDto.sourceCodeId },
+    //     digitalContent: { id: digitalContentToSourceCodeDto.digitalContentId },
+    //   },
+    //   withDeleted: digitalContentToSourceCodeDto.withDeleted,
+    // });
+    const sourceCodeToUsers = await this.digitalContentToSourceCodeModel
+      .find({
+        // 'sourceCode._id': digitalContentToSourceCodeDto.sourceCodeId,
+        // 'digitalContent._id': digitalContentToSourceCodeDto.digitalContentId,
+        sourceCode: { _id: digitalContentToSourceCodeDto.sourceCodeId },
+        digitalContent: { _id: digitalContentToSourceCodeDto.digitalContentId },
+      })
+      .populate('sourceCode')
+      .populate('digitalContent');
     const res = sourceCodeToUsers.map((sourceCodeToUser) => {
-      const { sourceCode, digitalContent, ...rest } = sourceCodeToUser;
+      const { sourceCode, digitalContent, ...rest } =
+        sourceCodeToUser.toObject();
       return {
         ...rest,
-        sourceCodeId: sourceCode?.id,
+        sourceCodeId: sourceCode?._id,
         sourceCodeName: sourceCode?.name,
-        digitalContentId: digitalContent?.id,
+        digitalContentId: digitalContent?._id,
         digitalContentName: digitalContent?.name,
       };
     });
@@ -60,24 +69,29 @@ export class DigitalContentService {
   }
 
   async createNewDigitalContent(digitalContentDto: DigitalContentDto) {
-    const digitalContent = Object.assign({}, digitalContentDto);
-    await this.digitalContentRepo.save(digitalContent);
-    return digitalContent;
+    const digitalContent = new this.digitalContentModel(digitalContentDto);
+    return await digitalContent.save();
   }
 
-  async updateDigitalContent(id: number, digitalContentDto: DigitalContentDto) {
-    let toUpdate = await this.digitalContentRepo.findOneBy({ id });
+  async updateDigitalContent(id: string, digitalContentDto: DigitalContentDto) {
+    // let toUpdate = await this.digitalContentRepo.findOneBy({ id });
 
-    let updated = Object.assign(toUpdate, digitalContentDto);
-    return await this.digitalContentRepo.save(updated);
+    // let updated = Object.assign(toUpdate, digitalContentDto);
+    // return await this.digitalContentRepo.save(updated);
+    const updated = await this.digitalContentModel.findByIdAndUpdate(
+      id,
+      digitalContentDto,
+    );
+    return updated;
   }
 
-  async deleteDigitalContent(id: number) {
-    const toRemove = await this.digitalContentRepo.findOneOrFail({
-      where: { id },
-      relations: { digitalContentToSourceCodes: true },
-    });
-    return await this.digitalContentRepo.softRemove(toRemove);
+  async deleteDigitalContent(id: string) {
+    // const toRemove = await this.digitalContentRepo.findOneOrFail({
+    //   where: { id },
+    //   relations: { digitalContentToSourceCodes: true },
+    // });
+    // return await this.digitalContentRepo.softRemove(toRemove);
+    return await this.digitalContentModel.findByIdAndDelete(id);
   }
 
   /*------------------------ checkin/checkout sourceCode ------------------------- */
@@ -86,31 +100,32 @@ export class DigitalContentService {
     checkoutDigitalContentDto: CheckoutDigitalContentDto,
   ) {
     if (
-      await this.digitalContentToSourceCodeRepo.findOne({
-        where: {
-          digitalContent: { id: checkoutDigitalContentDto.digitalContentId },
-          sourceCode: { id: checkoutDigitalContentDto.sourceCodeId },
-        },
+      await this.digitalContentToSourceCodeModel.findOne({
+        // 'digitalContent._id': checkoutDigitalContentDto.digitalContentId,
+        // 'sourceCode._id': checkoutDigitalContentDto.sourceCodeId,
+        digitalContent: { _id: checkoutDigitalContentDto.digitalContentId },
+        sourceCode: { _id: checkoutDigitalContentDto.sourceCodeId },
       })
     )
       throw new HttpException(
         'This source code is already checkout',
         HttpStatus.BAD_REQUEST,
       );
-    const digitalContent = await this.digitalContentRepo.findOne({
-      where: { id: checkoutDigitalContentDto.digitalContentId },
-    });
+    const digitalContent = await this.digitalContentModel.findById(
+      checkoutDigitalContentDto.digitalContentId,
+    );
     const sourceCode = await this.sourceCodeService.getSourceCodeById(
       checkoutDigitalContentDto.sourceCodeId,
     );
-    const digitalContentToSourceCode = new DigitalContentToSourceCode();
+    const digitalContentToSourceCode =
+      new this.digitalContentToSourceCodeModel();
     digitalContentToSourceCode.digitalContent = digitalContent;
     digitalContentToSourceCode.sourceCode = sourceCode;
     digitalContentToSourceCode.checkout_date =
       checkoutDigitalContentDto.checkout_date;
     digitalContentToSourceCode.checkout_note =
       checkoutDigitalContentDto.checkout_note;
-    await this.digitalContentToSourceCodeRepo.save(digitalContentToSourceCode);
+    await digitalContentToSourceCode.save();
     return digitalContentToSourceCode;
   }
 
@@ -118,17 +133,18 @@ export class DigitalContentService {
     checkinDigitalContentDto: CheckinDigitalContentDto,
   ) {
     const digitalContentToSourceCode =
-      await this.digitalContentToSourceCodeRepo.findOneBy({
-        id: checkinDigitalContentDto.digitalContentToSourceCodeId,
-      });
+      await this.digitalContentToSourceCodeModel.findById(
+        checkinDigitalContentDto.digitalContentToSourceCodeId,
+      );
     digitalContentToSourceCode.checkin_date =
       checkinDigitalContentDto.checkin_date;
     digitalContentToSourceCode.checkin_note =
       checkinDigitalContentDto.checkin_note;
-    await this.digitalContentToSourceCodeRepo.save(digitalContentToSourceCode);
-    await this.digitalContentToSourceCodeRepo.softDelete({
-      id: checkinDigitalContentDto.digitalContentToSourceCodeId,
-    });
+    await digitalContentToSourceCode.save();
+    // Soft delete
+    // await this.digitalContentToSourceCodeRepo.softDelete({
+    //   id: checkinDigitalContentDto.digitalContentToSourceCodeId,
+    // });
     return digitalContentToSourceCode;
   }
 }

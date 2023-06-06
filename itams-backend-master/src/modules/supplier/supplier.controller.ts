@@ -5,7 +5,6 @@ import {
   Post,
   Put,
   Body,
-  ParseIntPipe,
   Delete,
   Param,
 } from '@nestjs/common';
@@ -28,12 +27,12 @@ export class SupplierController {
 
   @Get('get-supplier-by-id/:id')
   @UseGuards(JwtAllAuthGuard)
-  async geSupplierById(@Param('id', ParseIntPipe) id: number) {
+  async geSupplierById(@Param('id') id: string) {
     return await this.supplierService.getSupplierById(id);
   }
 
-  @Post('create-supplier')
   @UseGuards(JwtAdminAuthGuard)
+  @Post('create-supplier')
   async createSupplier(@Body() supplierDto: SupplierDto) {
     return await this.supplierService.createNewSupplier(supplierDto);
   }
@@ -42,14 +41,14 @@ export class SupplierController {
   @UseGuards(JwtAdminAuthGuard)
   async updateSupplier(
     @Body() supplierDto: SupplierDto,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     return await this.supplierService.updateSupplier(id, supplierDto);
   }
 
   @Delete('delete-supplier')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteSupplier(@Body('id', ParseIntPipe) id: number) {
+  async deleteSupplier(@Body('id') id: string) {
     return await this.supplierService.deleteSupplier(id);
   }
 }

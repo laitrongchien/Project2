@@ -9,9 +9,9 @@ export class AssetModelDto {
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  categoryId: number;
+  categoryId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  manufacturerId: number;
+  manufacturerId: string;
 }

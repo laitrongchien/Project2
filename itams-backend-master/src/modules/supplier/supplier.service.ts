@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Supplier } from 'src/models/entities/supplier.entity';
-import { SupplierRepository } from 'src/models/repositories/supplier.repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Supplier } from '../../models/schemas/supplier.schema';
 import { SupplierDto } from './dtos/supplier.dto';
 
 @Injectable()
@@ -9,15 +9,20 @@ export class SupplierService {
   private logger = new Logger(SupplierService.name);
 
   constructor(
-    @InjectRepository(Supplier) private supplierRepo: SupplierRepository,
+    @InjectModel(Supplier.name)
+    private readonly supplierModel: Model<Supplier>,
   ) {}
 
-  async getAllSuppliers() {
-    const suppliers = await this.supplierRepo.find({
-      relations: { assets: true, licenses: true },
-    });
+  async getAllSuppliers(): Promise<any> {
+    // const suppliers = await this.supplierRepo.find({
+    //   relations: { assets: true, licenses: true },
+    // });
+    const suppliers = await this.supplierModel
+      .find()
+      .populate('assets')
+      .populate('licenses');
     const res = suppliers.map((supplier) => {
-      const { assets, licenses, ...rest } = supplier;
+      const { assets, licenses, ...rest } = supplier.toObject();
       return {
         ...rest,
         assets: assets?.length ?? 0,
@@ -27,41 +32,40 @@ export class SupplierService {
     return res;
   }
 
-  async getSupplierById(id: number) {
-    const supplier = await this.supplierRepo.findOneBy({ id });
+  async getSupplierById(id: string): Promise<Supplier> {
+    const supplier = await this.supplierModel.findById(id);
     return supplier;
   }
 
-  async createNewSupplier(supplierDto: SupplierDto) {
-    if (await this.supplierRepo.findOneBy({ name: supplierDto.name }))
+  async createNewSupplier(supplierDto: SupplierDto): Promise<Supplier> {
+    if (await this.supplierModel.findOne({ name: supplierDto.name }))
       throw new HttpException(
         'This value already exists',
         HttpStatus.BAD_REQUEST,
       );
-    const supplier = new Supplier();
-    supplier.name = supplierDto.name;
-    await this.supplierRepo.save(supplier);
-    return supplier;
+    return await this.supplierModel.create(supplierDto);
   }
 
-  async updateSupplier(id: number, supplierDto: SupplierDto) {
+  async updateSupplier(
+    id: string,
+    supplierDto: SupplierDto,
+  ): Promise<Supplier> {
     if (
-      (await this.supplierRepo.findOneBy({ id }))?.name !== supplierDto.name &&
-      (await this.supplierRepo.findOneBy({ name: supplierDto.name }))
+      (await this.supplierModel.findById(id))?.name !== supplierDto.name &&
+      (await this.supplierModel.findOne({ name: supplierDto.name }))
     )
       throw new HttpException(
         'This value already exists',
         HttpStatus.BAD_REQUEST,
       );
-    let toUpdate = await this.supplierRepo.findOneBy({ id });
-
-    let updated = Object.assign(toUpdate, supplierDto);
-    return await this.supplierRepo.save(updated);
+    const toUpdate = await this.supplierModel.findById(id);
+    toUpdate.name = supplierDto.name;
+    return await toUpdate.save();
   }
 
-  async deleteSupplier(id: number) {
+  async deleteSupplier(id: string): Promise<Supplier> {
     try {
-      return await this.supplierRepo.delete({ id });
+      return await this.supplierModel.findByIdAndDelete(id);
     } catch (err) {
       throw new HttpException(
         'This value is still in use',

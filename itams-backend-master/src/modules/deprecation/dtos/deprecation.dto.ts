@@ -13,7 +13,8 @@ export class DeprecationDto {
   months: number;
 
   @ApiProperty({ required: true })
-  @IsNumber()
+  // @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  categoryId: number;
+  categoryId: string;
 }

@@ -5,7 +5,6 @@ import {
   Post,
   Put,
   Body,
-  ParseIntPipe,
   Delete,
   Query,
   Param,
@@ -30,9 +29,15 @@ export class DepartmentController {
 
   @Get('get-department-by-id/:id')
   @UseGuards(JwtAllAuthGuard)
-  async getDepartmentById(@Param('id', ParseIntPipe) id: number) {
+  async getDepartmentById(@Param('id') id: string) {
     return await this.departmentService.getDepartmentByDepartmentId(id);
   }
+
+  // @Get('get-department-by-location-id/:id')
+  // @UseGuards(JwtAllAuthGuard)
+  // async getDepartmentByLocationId(@Param('id') id: string) {
+  //   return await this.departmentService.getDepartmentByLocationId(id);
+  // }
 
   @Post('create-department')
   @UseGuards(JwtAdminAuthGuard)
@@ -44,14 +49,14 @@ export class DepartmentController {
   @UseGuards(JwtAdminAuthGuard)
   async updateDepartment(
     @Body() departmentDto: DepartmentDto,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     return await this.departmentService.updateDepartment(id, departmentDto);
   }
 
   @Delete('delete-department')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteDepartment(@Body('id', ParseIntPipe) id: number) {
+  async deleteDepartment(@Body('id') id: string) {
     return await this.departmentService.deleteDepartment(id);
   }
 }

@@ -1,10 +1,9 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import Asset from 'src/models/entities/asset.entity';
-import AssetToInventory from 'src/models/entities/assetToInventory.entity';
-import Inventory from 'src/models/entities/inventory.entity';
-import { AssetToInventoryRepository } from 'src/models/repositories/assetToInventory.repository';
-import { InventoryRepository } from 'src/models/repositories/inventory.repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Inventory } from '../../models/schemas/inventory.schema';
+import { AssetToInventory } from '../../models/schemas/assetToInventory.schema';
+import { Asset } from '../../models/schemas/asset.schema';
 import { AssetService } from '../asset/asset.service';
 import { DepartmentService } from '../department/department.service';
 import { StatusService } from '../status/status.service';
@@ -16,21 +15,22 @@ export class InventoryService {
   private logger = new Logger(InventoryService.name);
 
   constructor(
-    @InjectRepository(Inventory)
-    private inventoryRepo: InventoryRepository,
-    @InjectRepository(AssetToInventory)
-    private assetToInventoryRepo: AssetToInventoryRepository,
+    @InjectModel(Inventory.name)
+    private inventoryModel: Model<Inventory>,
+    @InjectModel(AssetToInventory.name)
+    private assetToInventoryModel: Model<AssetToInventory>,
     private assetService: AssetService,
     private departmentService: DepartmentService,
     private statusService: StatusService,
   ) {}
 
-  async getAllInventories() {
-    const inventories = await this.inventoryRepo.find({
-      relations: { department: true, assetToInventories: true },
-    });
+  async getAllInventories(): Promise<any> {
+    // const inventories = await this.inventoryRepo.find({
+    //   relations: { department: true, assetToInventories: true },
+    // });
+    const inventories = await this.inventoryModel.find();
     const res = inventories.map((inventory) => {
-      const { department, assetToInventories, ...rest } = inventory;
+      const { department, assetToInventories, ...rest } = inventory.toObject();
       return {
         ...rest,
         department: department.name,
@@ -43,8 +43,8 @@ export class InventoryService {
     return res;
   }
 
-  async getInventoryById(id: number) {
-    const inventory = await this.inventoryRepo.findOneBy({ id });
+  async getInventoryById(id: string) {
+    const inventory = await this.inventoryModel.findById(id);
     return inventory;
   }
 
@@ -53,54 +53,65 @@ export class InventoryService {
       inventoryDto.departmentId,
     );
 
-    const inventory = new Inventory();
+    const inventory = new this.inventoryModel();
     inventory.name = inventoryDto.name;
     inventory.department = department;
     inventory.start_date = inventoryDto.start_date;
     inventory.end_date = inventoryDto.end_date;
-    inventory.note = inventory.note;
-    await this.inventoryRepo.save(inventory);
+    inventory.note = inventoryDto.note;
+    await inventory.save();
 
     const assets = await this.assetService.getAssetsByDepartmentId(
       inventoryDto.departmentId,
     );
+    // console.log(assets);
     await Promise.all(
       assets.map(async (asset: Asset) => {
-        const assetToInventory = new AssetToInventory();
+        const assetToInventory = new this.assetToInventoryModel();
         assetToInventory.inventory = inventory;
         assetToInventory.asset = asset;
         assetToInventory.old_cost = asset.current_cost;
         assetToInventory.new_cost = asset.current_cost;
         assetToInventory.old_status = asset.status;
         assetToInventory.new_status = asset.status;
-        await this.assetToInventoryRepo.save(assetToInventory);
+        // console.log(assetToInventory);
+        await assetToInventory.save();
       }),
     );
     return inventory;
   }
 
-  async updateInventory(id: number, inventoryDto: InventoryDto) {
-    let toUpdate = await this.inventoryRepo.findOneBy({ id });
+  async updateInventory(id: string, inventoryDto: InventoryDto) {
+    const toUpdate = await this.inventoryModel.findById(id);
     toUpdate.name = inventoryDto?.name;
     toUpdate.start_date = inventoryDto?.start_date;
     toUpdate.note = inventoryDto?.note;
     toUpdate.end_date = inventoryDto?.end_date;
-    await this.inventoryRepo.save(toUpdate);
-    return toUpdate;
+    return await toUpdate.save();
   }
 
-  async getAssetToInventoryByInventoryId(id: number) {
+  async getAssetToInventoryByInventoryId(id: string): Promise<any> {
+    // const assetToInventories: AssetToInventory[] =
+    //   await this.assetToInventoryRepo.find({
+    //     where: { inventory: { id } },
+    //     relations: { asset: true, old_status: true, new_status: true },
+    //     withDeleted: true,
+    //   });
     const assetToInventories: AssetToInventory[] =
-      await this.assetToInventoryRepo.find({
-        where: { inventory: { id } },
-        relations: { asset: true, old_status: true, new_status: true },
-        withDeleted: true,
-      });
+      await this.assetToInventoryModel
+        .find({
+          // 'inventory._id': id,
+          inventory: { _id: id },
+        })
+        .populate('asset')
+        .populate('old_status')
+        .populate('new_status');
     const res = assetToInventories.map((assetToInventory) => {
-      const { asset, old_status, new_status, ...rest } = assetToInventory;
+      const { asset, old_status, new_status, ...rest } =
+        assetToInventory.toObject();
       return {
         ...rest,
-        asset_id: asset.id,
+        asset_id: asset._id,
         asset_name: asset.name,
         purchase_date: asset.purchase_date,
         purchase_cost: asset.purchase_cost,
@@ -112,7 +123,7 @@ export class InventoryService {
   }
 
   async updateAssetToInventory(
-    id: number,
+    id: string,
     updateDto: UpdateAssetToInventoryDto,
   ) {
     if (
@@ -124,14 +135,14 @@ export class InventoryService {
         `New cost of asset ${updateDto?.assetId} is invalid`,
         HttpStatus.BAD_REQUEST,
       );
-    let toUpdate = await this.assetToInventoryRepo.findOneBy({ id });
+    const toUpdate = await this.assetToInventoryModel.findById(id);
     const status = await this.statusService.getStatusById(
       updateDto.newStatusId,
     );
     toUpdate.new_cost = updateDto?.new_cost;
     toUpdate.check = updateDto?.check;
     toUpdate.new_status = status;
-    await this.assetToInventoryRepo.save(toUpdate);
+    await toUpdate.save();
     await this.assetService.saveAssetAfterInventory(
       updateDto.assetId,
       updateDto.newStatusId,

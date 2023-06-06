@@ -6,23 +6,25 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import * as dayjs from 'dayjs';
 import { Cron } from '@nestjs/schedule';
-import License from 'src/models/entities/license.entity';
-import { LicenseRepository } from 'src/models/repositories/license.repository';
+import { License } from '../../models/schemas/license.schema';
+import { LicenseToAsset } from '../../models/schemas/licenseToAsset.schema';
+
 import { CategoryService } from '../category/category.service';
 import { ManufacturerService } from '../manufacturer/manufacturer.service';
 import { SupplierService } from '../supplier/supplier.service';
-import { LicenseDto } from './dtos/license.dto';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationType } from '../notification/notification.constants';
+import { AssetService } from '../asset/asset.service';
+
+import { LicenseDto } from './dtos/license.dto';
 import { LicenseQueryDto } from './dtos/licenseQuery.dto';
 import { CheckoutLicenseDto } from './dtos/checkoutLicense.dto';
 import { CheckinLicenseDto } from './dtos/checkinLicense.dto';
-import LicenseToAsset from 'src/models/entities/licenseToAsset.entity';
-import { AssetService } from '../asset/asset.service';
-import { LicenseToAssetRepository } from 'src/models/repositories/licenseToAsset.repository';
+// import { LicenseToAssetRepository } from 'src/models/repositories/licenseToAsset.repository';
 import { LicenseToAssetQueryDto } from './dtos/licenseToAsset.dto';
 
 @Injectable()
@@ -30,10 +32,10 @@ export class LicenseService {
   private logger = new Logger(LicenseService.name);
 
   constructor(
-    @InjectRepository(License)
-    private licenseRepo: LicenseRepository,
-    @InjectRepository(LicenseToAsset)
-    private licenseToAssetRepo: LicenseToAssetRepository,
+    @InjectModel(License.name)
+    private licenseModel: Model<License>,
+    @InjectModel(LicenseToAsset.name)
+    private licenseToAssetModel: Model<LicenseToAsset>,
     private assetService: AssetService,
     private categoryService: CategoryService,
     private manufacturerService: ManufacturerService,
@@ -42,23 +44,23 @@ export class LicenseService {
     private notificationService: NotificationService,
   ) {}
 
-  async getAll(licenseQuery?: LicenseQueryDto) {
-    const licenses = await this.licenseRepo.find({
-      relations: {
-        category: true,
-        manufacturer: true,
-        supplier: true,
-        licenseToAssets: true,
-      },
-      where: {
-        category: { id: licenseQuery.categoryId },
-        manufacturer: { id: licenseQuery.manufacturerId },
-        supplier: { id: licenseQuery.supplierId },
-      },
-    });
+  async getAll(licenseQuery?: LicenseQueryDto): Promise<any> {
+    const licenses = await this.licenseModel
+      .find({
+        // 'category._id': licenseQuery.categoryId,
+        // 'manufacturer._id': licenseQuery.manufacturerId,
+        // 'supplier._id': licenseQuery.supplierId,
+        category: { _id: licenseQuery.categoryId },
+        manufacturer: { _id: licenseQuery.manufacturerId },
+        supplier: { _id: licenseQuery.supplierId },
+      })
+      .populate('category')
+      .populate('manufacturer')
+      .populate('supplier')
+      .populate('licenseToAssets');
     const res = licenses.map((license) => {
       const { category, manufacturer, supplier, licenseToAssets, ...rest } =
-        license;
+        license.toObject();
       return {
         ...rest,
         category: license?.category?.name,
@@ -70,18 +72,15 @@ export class LicenseService {
     return res;
   }
 
-  async getLicenseByLicenseId(id: number) {
-    const license: License = await this.licenseRepo.findOne({
-      where: { id },
-      relations: {
-        category: true,
-        manufacturer: true,
-        supplier: true,
-        licenseToAssets: true,
-      },
-    });
+  async getLicenseByLicenseId(id: string): Promise<any> {
+    const license = await this.licenseModel
+      .findById(id)
+      .populate('category')
+      .populate('supplier')
+      .populate('manufacturer')
+      .populate('licenseToAssets');
     const { category, manufacturer, supplier, licenseToAssets, ...rest } =
-      license;
+      license.toObject();
     return {
       ...rest,
       category: license?.category?.name,
@@ -91,25 +90,35 @@ export class LicenseService {
     };
   }
 
-  async getLicenseToAsset(licenseToAssetQueryDto?: LicenseToAssetQueryDto) {
-    const licenseToAssets = await this.licenseToAssetRepo.find({
-      relations: {
-        asset: true,
-        license: true,
-      },
-      where: {
-        asset: { id: licenseToAssetQueryDto.assetId },
-        license: { id: licenseToAssetQueryDto.licenseId },
-      },
-      withDeleted: licenseToAssetQueryDto.withDeleted,
-    });
+  async getLicenseToAsset(
+    licenseToAssetQueryDto?: LicenseToAssetQueryDto,
+  ): Promise<any> {
+    // const licenseToAssets = await this.licenseToAssetModel.find({
+    //   relations: {
+    //     asset: true,
+    //     license: true,
+    //   },
+    //   where: {
+    //     asset: { id: licenseToAssetQueryDto.assetId },
+    //     license: { id: licenseToAssetQueryDto.licenseId },
+    //   },
+    //   withDeleted: licenseToAssetQueryDto.withDeleted,
+    const licenseToAssets = await this.licenseToAssetModel
+      .find({
+        // 'asset._id': licenseToAssetQueryDto.assetId,
+        // 'license._id': licenseToAssetQueryDto.licenseId,
+        asset: { _id: licenseToAssetQueryDto.assetId },
+        license: { _id: licenseToAssetQueryDto.licenseId },
+      })
+      .populate('asset')
+      .populate('license');
     const res = licenseToAssets.map((licenseToAsset) => {
-      const { asset, license, ...rest } = licenseToAsset;
+      const { asset, license, ...rest } = licenseToAsset.toObject();
       return {
         ...rest,
-        assetId: asset?.id,
+        assetId: asset?._id,
         assetName: asset?.name,
-        licenseId: license?.id,
+        licenseId: license?._id,
         licenseName: license?.name,
       };
     });
@@ -118,16 +127,16 @@ export class LicenseService {
 
   async createNewLicense(licenseDto: LicenseDto) {
     const category = await this.categoryService.getCategoryById(
-      licenseDto.supplierId,
+      licenseDto.categoryId,
     );
     const manufacturer = await this.manufacturerService.getManufacturerById(
-      licenseDto.supplierId,
+      licenseDto.manufacturerId,
     );
     const supplier = await this.supplierService.getSupplierById(
       licenseDto.supplierId,
     );
 
-    const license = new License();
+    const license = new this.licenseModel();
     license.name = licenseDto.name;
     license.key = licenseDto.key;
     license.purchase_cost = licenseDto.purchase_cost;
@@ -138,14 +147,14 @@ export class LicenseService {
     license.manufacturer = manufacturer;
     license.supplier = supplier;
 
-    await this.licenseRepo.save(license);
+    await license.save();
     await this.handleCronLicenseExpiration();
     return license;
   }
 
-  async updateLicense(id: number, licenseDto: LicenseDto) {
-    let toUpdate = await this.licenseRepo.findOneBy({ id });
-    let { categoryId, manufacturerId, supplierId, ...rest } = licenseDto;
+  async updateLicense(id: string, licenseDto: LicenseDto) {
+    const toUpdate = await this.licenseModel.findById(id);
+    const { categoryId, manufacturerId, supplierId, ...rest } = licenseDto;
     const category = await this.categoryService.getCategoryById(
       licenseDto.categoryId,
     );
@@ -155,47 +164,46 @@ export class LicenseService {
     const supplier = await this.supplierService.getSupplierById(
       licenseDto.supplierId,
     );
-    let updated = Object.assign(toUpdate, rest);
+    const updated = Object.assign(toUpdate, rest);
     updated.category = category;
     updated.manufacturer = manufacturer;
     updated.supplier = supplier;
-    await this.licenseRepo.save(updated);
+    await updated.save();
     await this.handleCronLicenseExpiration();
     return updated;
   }
 
-  async deleteLicense(id: number) {
+  async deleteLicense(id: string) {
     await this.notificationService.deleteNotification(
       NotificationType.LICENSE,
       id,
     );
-    const toRemove = await this.licenseRepo.findOneOrFail({
-      where: { id },
-      relations: { licenseToAssets: true },
-    });
-    return await this.licenseRepo.softRemove(toRemove);
+    // const toRemove = await this.licenseRepo.findOneOrFail({
+    //   where: { id },
+    //   relations: { licenseToAssets: true },
+    // });
+    // return await this.licenseRepo.softRemove(toRemove);
   }
 
-  async getLicenseById(id: number) {
-    const license: License = await this.licenseRepo.findOneBy({ id });
+  async getLicenseById(id: string) {
+    const license: License = await this.licenseModel.findById(id);
     return license;
   }
 
   /*------------------------ checkin/checkout license ------------------------- */
 
   async checkoutLicense(checkoutLicenseDto: CheckoutLicenseDto) {
-    const license = await this.licenseRepo.findOne({
-      relations: { licenseToAssets: true },
-      where: { id: checkoutLicenseDto.licenseId },
-    });
+    const license = await this.licenseModel
+      .findById(checkoutLicenseDto.licenseId)
+      .populate('licenseToAssets');
     if (license.licenseToAssets.length >= license.seats)
       throw new HttpException('This license is full', HttpStatus.BAD_REQUEST);
     if (
-      await this.licenseToAssetRepo.findOne({
-        where: {
-          asset: { id: checkoutLicenseDto.assetId },
-          license: { id: checkoutLicenseDto.licenseId },
-        },
+      await this.licenseToAssetModel.findOne({
+        // 'asset._id': checkoutLicenseDto.assetId,
+        // 'license._id': checkoutLicenseDto.licenseId,
+        asset: { _id: checkoutLicenseDto.assetId },
+        license: { _id: checkoutLicenseDto.licenseId },
       })
     )
       throw new HttpException(
@@ -205,25 +213,26 @@ export class LicenseService {
     const asset = await this.assetService.getAssetById(
       checkoutLicenseDto.assetId,
     );
-    const licenseToAsset = new LicenseToAsset();
+    const licenseToAsset = new this.licenseToAssetModel();
     licenseToAsset.asset = asset;
     licenseToAsset.license = license;
     licenseToAsset.checkout_date = checkoutLicenseDto.checkout_date;
     licenseToAsset.checkout_note = checkoutLicenseDto.checkout_note;
-    await this.licenseToAssetRepo.save(licenseToAsset);
+    await licenseToAsset.save();
     return licenseToAsset;
   }
 
   async checkinLicense(checkinLicenseDto: CheckinLicenseDto) {
-    const licenseToAsset = await this.licenseToAssetRepo.findOneBy({
-      id: checkinLicenseDto.licenseToAssetId,
-    });
+    const licenseToAsset = await this.licenseToAssetModel.findById(
+      checkinLicenseDto.licenseToAssetId,
+    );
     licenseToAsset.checkin_date = checkinLicenseDto.checkin_date;
     licenseToAsset.checkin_note = checkinLicenseDto.checkin_note;
-    await this.licenseToAssetRepo.save(licenseToAsset);
-    await this.licenseToAssetRepo.softDelete({
-      id: checkinLicenseDto.licenseToAssetId,
-    });
+    await licenseToAsset.save();
+    // await this.licenseToAssetRepo.softDelete({
+    //   id: checkinLicenseDto.licenseToAssetId,
+    // });
+    // Implement soft delete
     return licenseToAsset;
   }
 
@@ -232,20 +241,20 @@ export class LicenseService {
   // At 00:00 everyday
   @Cron('0 0 * * *')
   async handleCronLicenseExpiration() {
-    const licenses: License[] = await this.licenseRepo.find();
+    const licenses: License[] = await this.licenseModel.find();
     await Promise.all(
       licenses.map(async (license: License) => {
         const expiration_date = license.expiration_date;
         const date1 = dayjs(expiration_date);
-        const date2 = dayjs();
-        let diff = date1.diff(date2, 'day');
+        const date2 = dayjs(); // current date and time
+        const diff = date1.diff(date2, 'day'); // calculate the difference in days
         await this.notificationService.deleteNotification(
           NotificationType.LICENSE,
-          license.id,
+          license._id,
         );
         if (diff <= 30) {
           await this.notificationService.createNewNotification({
-            itemId: license.id,
+            itemId: license._id,
             expiration_date: license.expiration_date,
             type: NotificationType.LICENSE,
           });

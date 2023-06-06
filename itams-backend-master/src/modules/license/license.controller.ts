@@ -33,7 +33,7 @@ export class LicenseController {
 
   @Get('get-license-by-id/:id')
   @UseGuards(JwtAdminAuthGuard)
-  async getLicenseById(@Param('id', ParseIntPipe) id: number) {
+  async getLicenseById(@Param('id') id: string) {
     return await this.licenseService.getLicenseByLicenseId(id);
   }
 
@@ -51,16 +51,13 @@ export class LicenseController {
 
   @Put('update-license')
   @UseGuards(JwtAdminAuthGuard)
-  async updateLicense(
-    @Body() licenseDto: LicenseDto,
-    @Body('id', ParseIntPipe) id: number,
-  ) {
+  async updateLicense(@Body() licenseDto: LicenseDto, @Body('id') id: string) {
     return await this.licenseService.updateLicense(id, licenseDto);
   }
 
   @Delete('delete-license')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteLicense(@Body('id', ParseIntPipe) id: number) {
+  async deleteLicense(@Body('id') id: string) {
     return await this.licenseService.deleteLicense(id);
   }
 

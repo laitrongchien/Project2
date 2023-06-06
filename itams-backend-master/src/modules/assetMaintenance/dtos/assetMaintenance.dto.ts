@@ -3,14 +3,16 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class AssetMaintenanceDto {
   @ApiProperty({ required: true })
-  @IsNumber()
+  // @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  assetId: number;
+  assetId: string;
 
   @ApiProperty({ required: true })
-  @IsNumber()
+  // @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  supplierId: number;
+  supplierId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()

@@ -10,6 +10,7 @@ import { AuthController } from './auth.controller';
 import { AdminModule } from '../admin/admin.module';
 import { LocalAdminStrategy } from './strategies/local-admin.strategy';
 import { JwtAdminStrategy } from './strategies/jwt-admin.strategy';
+import { JwtAllStrategy } from './strategies/jwt-all.strategy';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { JwtAdminStrategy } from './strategies/jwt-admin.strategy';
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: `${jwtConstants.expire}s` },
+      signOptions: { expiresIn: '86400s' },
     }),
   ],
   controllers: [AuthController],
@@ -28,6 +29,7 @@ import { JwtAdminStrategy } from './strategies/jwt-admin.strategy';
     JwtStrategy,
     LocalAdminStrategy,
     JwtAdminStrategy,
+    JwtAllStrategy,
   ],
   exports: [AuthService],
 })

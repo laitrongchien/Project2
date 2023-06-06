@@ -4,11 +4,11 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CheckoutSourceCodeDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  sourceCodeId: number;
+  sourceCodeId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  userId: number;
+  userId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()

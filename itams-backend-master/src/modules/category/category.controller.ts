@@ -5,7 +5,6 @@ import {
   Post,
   Put,
   Body,
-  ParseIntPipe,
   Delete,
   Param,
   UseInterceptors,
@@ -32,7 +31,7 @@ export class CategoryController {
 
   @Get('get-category-by-id/:id')
   @UseGuards(JwtAllAuthGuard)
-  async getCategoryById(@Param('id', ParseIntPipe) id: number) {
+  async getCategoryById(@Param('id') id: string) {
     return await this.categoryService.getCategoryById(id);
   }
 
@@ -47,7 +46,7 @@ export class CategoryController {
   @UseInterceptors(FileInterceptor('image', imageStorageOptions))
   async saveImage(
     @UploadedFile() file: Express.Multer.File,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     const res = await this.categoryService.saveImage(id, file);
     return res;
@@ -57,14 +56,14 @@ export class CategoryController {
   @UseGuards(JwtAdminAuthGuard)
   async updateCategory(
     @Body() categoryDto: CategoryDto,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     return await this.categoryService.updateCategory(id, categoryDto);
   }
 
   @Delete('delete-category')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteCategory(@Body('id', ParseIntPipe) id: number) {
+  async deleteCategory(@Body('id') id: string) {
     return await this.categoryService.deleteCategory(id);
   }
 }

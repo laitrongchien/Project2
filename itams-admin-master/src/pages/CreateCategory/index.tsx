@@ -7,6 +7,7 @@ import { Actions } from '../../interface/interface';
 function CreateCategory(props: any) {
   const { action } = props;
   const { state } = useLocation();
+  console.log(state)
   return (
     <Box>
       <PageHeader

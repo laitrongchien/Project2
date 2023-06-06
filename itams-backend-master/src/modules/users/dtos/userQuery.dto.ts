@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UserQueryDto {
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
-  departmentId: number;
+  // @IsNumber()
+  @IsString()
+  departmentId: string;
 }

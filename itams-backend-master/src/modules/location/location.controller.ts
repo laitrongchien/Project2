@@ -5,7 +5,6 @@ import {
   Post,
   Put,
   Body,
-  ParseIntPipe,
   Delete,
   Param,
 } from '@nestjs/common';
@@ -28,7 +27,7 @@ export class LocationController {
 
   @Get('get-location-by-id/:id')
   @UseGuards(JwtAllAuthGuard)
-  async getLocationById(@Param('id', ParseIntPipe) id: number) {
+  async getLocationById(@Param('id') id: string) {
     return await this.locationService.getLocationById(id);
   }
 
@@ -41,15 +40,15 @@ export class LocationController {
   @Put('update-location')
   @UseGuards(JwtAdminAuthGuard)
   async updateLocation(
+    @Body('id') id: string,
     @Body() locationDto: LocationDto,
-    @Body('id', ParseIntPipe) id: number,
   ) {
     return await this.locationService.updateLocation(id, locationDto);
   }
 
   @Delete('delete-location')
   @UseGuards(JwtAdminAuthGuard)
-  async deleteLocation(@Body('id', ParseIntPipe) id: number) {
+  async deleteLocation(@Body('id') id: string) {
     return await this.locationService.deleteLocation(id);
   }
 }

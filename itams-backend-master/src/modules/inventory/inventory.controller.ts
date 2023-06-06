@@ -27,7 +27,7 @@ export class InventoryController {
 
   @Get('get-inventory-by-id')
   @UseGuards(JwtAdminAuthGuard)
-  async getInventoryById(@Body('id', ParseIntPipe) id: number) {
+  async getInventoryById(@Body('id') id: string) {
     return await this.inventoryService.getInventoryById(id);
   }
 
@@ -41,16 +41,14 @@ export class InventoryController {
   @UseGuards(JwtAdminAuthGuard)
   async updateInventory(
     @Body() inventoryDto: InventoryDto,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     return await this.inventoryService.updateInventory(id, inventoryDto);
   }
 
   @Get('get-asset-to-inventory')
   @UseGuards(JwtAdminAuthGuard)
-  async getAssetToInventoryByInventoryId(
-    @Query('id', ParseIntPipe) id: number,
-  ) {
+  async getAssetToInventoryByInventoryId(@Query('id') id: string) {
     return await this.inventoryService.getAssetToInventoryByInventoryId(id);
   }
 
@@ -58,7 +56,7 @@ export class InventoryController {
   @UseGuards(JwtAdminAuthGuard)
   async updateAssetToInventory(
     @Body() updateDto: UpdateAssetToInventoryDto,
-    @Body('id', ParseIntPipe) id: number,
+    @Body('id') id: string,
   ) {
     return await this.inventoryService.updateAssetToInventory(id, updateDto);
   }

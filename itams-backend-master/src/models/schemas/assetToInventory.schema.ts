@@ -5,7 +5,7 @@ import { Inventory } from './inventory.schema';
 import { Status } from './status.schema';
 
 @Schema()
-export class AssetMaintenance extends Document {
+export class AssetToInventory extends Document {
   @Prop({ default: null })
   old_cost: number;
 
@@ -28,5 +28,5 @@ export class AssetMaintenance extends Document {
   new_status: Status;
 }
 
-export const AssetMaintenanceSchema =
-  SchemaFactory.createForClass(AssetMaintenance);
+export const AssetToInventorySchema =
+  SchemaFactory.createForClass(AssetToInventory);

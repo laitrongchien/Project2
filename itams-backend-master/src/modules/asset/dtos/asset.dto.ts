@@ -17,17 +17,17 @@ export class AssetDto {
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  assetModelId: number;
+  assetModelId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  departmentId: number;
+  departmentId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  statusId: number;
+  statusId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  supplierId: number;
+  supplierId: string;
 }

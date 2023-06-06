@@ -31,6 +31,7 @@ export const deleteCategory = async (id: number | string) => {
 
 export const createNewCategory = async (category: NewCategory) => {
   const response = await axios.post('/category/create-category', category);
+  console.log(response.data.id)
   return response.data;
 };
 

@@ -15,6 +15,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import RegisterDto from './dtos/register.dto';
 import { ApiTags } from '@nestjs/swagger';
 import RequestWithUser from './interfaces/request-with-user.interface';
+import RequestWithAdmin from './interfaces/request-with-admin.interface';
 import ChangePasswordDto from './dtos/change-passord.dto';
 import { LocalAdminAuthGuard } from './guards/local-admin-auth.guard';
 import { JwtAdminAuthGuard } from './guards/jwt-admin-auth.guard';
@@ -35,7 +36,7 @@ export class AuthController {
   @UseGuards(JwtAdminAuthGuard)
   @Get('admin')
   @UseInterceptors(ClassSerializerInterceptor)
-  authenticateAdmin(@Request() request: RequestWithUser) {
+  authenticateAdmin(@Request() request: RequestWithAdmin) {
     const admin = request.user;
     return admin;
   }
@@ -48,7 +49,7 @@ export class AuthController {
 
   @UseGuards(LocalAdminAuthGuard)
   @Post('login-admin')
-  async loginAdmin(@Request() request: RequestWithUser) {
+  async loginAdmin(@Request() request: RequestWithAdmin) {
     return this.authService.login(request.user);
   }
 

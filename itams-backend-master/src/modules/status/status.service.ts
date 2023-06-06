@@ -5,23 +5,24 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import Status from 'src/models/entities/status.entity';
-import { StatusRepository } from 'src/models/repositories/status.repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Status } from '../../models/schemas/status.schema';
 import { StatusDto } from './dtos/status.dto';
 
 @Injectable()
 export class StatusService {
   private logger = new Logger(StatusService.name);
 
-  constructor(@InjectRepository(Status) private statusRepo: StatusRepository) {}
+  constructor(
+    @InjectModel(Status.name)
+    private readonly statusModel: Model<Status>,
+  ) {}
 
-  async getAllStatuses() {
-    const statuses = await this.statusRepo.find({
-      relations: { assets: true },
-    });
+  async getAllStatuses(): Promise<any> {
+    const statuses = await this.statusModel.find().populate('assets');
     const res = statuses.map((status) => {
-      const { assets, ...rest } = status;
+      const { assets, ...rest } = status.toObject();
       return {
         ...rest,
         numOfAssets: assets.length,
@@ -30,42 +31,40 @@ export class StatusService {
     return res;
   }
 
-  async getStatusById(id: number) {
-    const status = await this.statusRepo.findOneBy({ id });
+  async getStatusById(id: string) {
+    const status = await this.statusModel.findById(id);
     return status;
   }
 
   async createNewStatus(statusDto: StatusDto) {
-    if (await this.statusRepo.findOneBy({ name: statusDto.name }))
+    if (await this.statusModel.findOne({ name: statusDto.name }))
       throw new HttpException(
         'This value already exists',
         HttpStatus.BAD_REQUEST,
       );
-    const status = new Status();
-    status.name = statusDto.name;
-    status.color = statusDto.color;
-    await this.statusRepo.save(status);
-    return status;
+    return await this.statusModel.create(statusDto);
   }
 
-  async updateStatus(id: number, statusDto: StatusDto) {
+  async updateStatus(id: string, statusDto: StatusDto) {
     if (
-      (await this.statusRepo.findOneBy({ id }))?.name !== statusDto.name &&
-      (await this.statusRepo.findOneBy({ name: statusDto.name }))
+      (await this.statusModel.findById(id))?.name !== statusDto.name &&
+      (await this.statusModel.findOne({ name: statusDto.name }))
     )
       throw new HttpException(
         'This value already exists',
         HttpStatus.BAD_REQUEST,
       );
-    let toUpdate = await this.statusRepo.findOneBy({ id });
+    const toUpdate = await this.statusModel.findById(id);
 
-    let updated = Object.assign(toUpdate, statusDto);
-    return await this.statusRepo.save(updated);
+    toUpdate.name = statusDto.name;
+    toUpdate.color = statusDto.color;
+    await toUpdate.save();
+    return toUpdate;
   }
 
-  async deleteStatus(id: number) {
+  async deleteStatus(id: string) {
     try {
-      return await this.statusRepo.delete({ id });
+      return await this.statusModel.findByIdAndDelete(id);
     } catch (err) {
       throw new HttpException(
         'This value is still in use',

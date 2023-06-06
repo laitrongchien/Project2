@@ -1,24 +1,24 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import DigitalContent from 'src/models/entities/digitalContent.entity';
-import DigitalContentToSourceCode from 'src/models/entities/digitalContentToSourceCode.entity';
-import { DigitalContentRepository } from 'src/models/repositories/digitalContent.repository';
-import { DigitalContentToSourceCodeRepository } from 'src/models/repositories/digitalContentToSourceCode.repository';
+import { MongooseModule } from '@nestjs/mongoose';
+import { DigitalContentSchema } from '../../models/schemas/digitalContent.schema';
+import { DigitalContentToSourceCodeSchema } from '../../models/schemas/digitalContentToSourceCode.schema';
 import { SourceCodeModule } from '../sourceCode/sourceCode.module';
 import { DigitalContentController } from './digitalContent.controller';
 import { DigitalContentService } from './digitalContent.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([DigitalContent, DigitalContentToSourceCode]),
+    MongooseModule.forFeature([
+      { name: 'DigitalContent', schema: DigitalContentSchema },
+      {
+        name: 'DigitalContentToSourceCode',
+        schema: DigitalContentToSourceCodeSchema,
+      },
+    ]),
     forwardRef(() => SourceCodeModule),
   ],
   controllers: [DigitalContentController],
-  providers: [
-    DigitalContentService,
-    DigitalContentRepository,
-    DigitalContentToSourceCodeRepository,
-  ],
+  providers: [DigitalContentService],
   exports: [DigitalContentService],
 })
 export class DigitalContentModule {}

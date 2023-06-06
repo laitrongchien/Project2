@@ -4,7 +4,7 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CheckinDigitalContentDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  digitalContentToSourceCodeId: number;
+  digitalContentToSourceCodeId: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()

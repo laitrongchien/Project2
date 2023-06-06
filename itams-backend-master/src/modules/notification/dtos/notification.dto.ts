@@ -4,8 +4,9 @@ import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 export class NotificationDto {
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
-  itemId: number;
+  // @IsNumber()
+  @IsString()
+  itemId: string;
 
   @ApiProperty()
   @IsNotEmpty()

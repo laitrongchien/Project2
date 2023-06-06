@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Notification } from 'src/models/entities/notification.entity';
-import { NotificationRepository } from 'src/models/repositories/notification.repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Notification } from '../../models/schemas/notification.schema';
 import { AssetService } from '../asset/asset.service';
 import { LicenseService } from '../license/license.service';
 import { NotificationDto } from './dtos/notification.dto';
@@ -12,18 +12,21 @@ export class NotificationService {
   private logger = new Logger(NotificationService.name);
 
   constructor(
-    @InjectRepository(Notification)
-    private notificationRepo: NotificationRepository,
+    @InjectModel(Notification.name)
+    private notificationModel: Model<Notification>,
     @Inject(forwardRef(() => AssetService))
     private assetService: AssetService,
     @Inject(forwardRef(() => LicenseService))
     private licenseService: LicenseService,
   ) {}
 
-  async getAllNotifications() {
-    const notifications = await this.notificationRepo.find({
-      order: { expiration_date: 'ASC' },
-    });
+  async getAllNotifications(): Promise<any> {
+    // const notifications = await this.notificationModel.find({
+    //   order: { expiration_date: 'ASC' },
+    // });
+    const notifications = await this.notificationModel
+      .find()
+      .sort({ expiration_date: 1 });
     const res = Promise.all(
       notifications.map(async (notification) => {
         const asset = await this.assetService.getAssetById(notification.itemId);
@@ -43,20 +46,20 @@ export class NotificationService {
   }
 
   async createNewNotification(notificationDto: NotificationDto) {
-    let notification = new Notification();
+    const notification = new this.notificationModel();
     notification.itemId = notificationDto.itemId;
     notification.expiration_date = notificationDto.expiration_date;
     notification.type = notificationDto.type;
-    await this.notificationRepo.save(notification);
+    await notification.save();
     return notification;
   }
 
-  async deleteNotification(type: NotificationType, id: number) {
+  async deleteNotification(type: NotificationType, id: string) {
     let res;
     if (type === NotificationType.ASSET)
-      res = await this.notificationRepo.delete({ type, itemId: id });
+      res = await this.notificationModel.deleteOne({ type, itemId: id });
     else if (type == NotificationType.LICENSE)
-      res = await this.notificationRepo.delete({ type, itemId: id });
+      res = await this.notificationModel.deleteOne({ type, itemId: id });
     return res;
   }
 }

@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Manufacturer } from 'src/models/entities/manufacturer.entity';
-import { ManufacturerRepository } from 'src/models/repositories/manufacturer.repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Manufacturer } from '../../models/schemas/manufacturer.schema';
 import { FirebaseService } from '../firebase/firebase.service';
 import { ManufacturerDto } from './dtos/manufacturer.dto';
 import { IMAGE_PATH } from './manufacturer.constants';
@@ -11,17 +11,21 @@ export class ManufacturerService {
   private logger = new Logger(ManufacturerService.name);
 
   constructor(
-    @InjectRepository(Manufacturer)
-    private manufacturerRepo: ManufacturerRepository,
+    @InjectModel(Manufacturer.name)
+    private readonly manufacturerModel: Model<Manufacturer>,
     private firebaseService: FirebaseService,
   ) {}
 
-  async getAllManufacturers() {
-    const manufacturers = await this.manufacturerRepo.find({
-      relations: { assetModels: true, licenses: true },
-    });
+  async getAllManufacturers(): Promise<any> {
+    // const manufacturers = await this.manufacturerModel.find({
+    //   relations: { assetModels: true, licenses: true },
+    // });
+    const manufacturers = await this.manufacturerModel
+      .find()
+      .populate('assetModels')
+      .populate('licenses');
     const res = manufacturers.map((manufacturer) => {
-      const { assetModels, licenses, ...rest } = manufacturer;
+      const { assetModels, licenses, ...rest } = manufacturer.toObject();
       return {
         ...rest,
         assetModels: assetModels.length,
@@ -31,49 +35,50 @@ export class ManufacturerService {
     return res;
   }
 
-  async getManufacturerById(id: number) {
-    const manufacturer = await this.manufacturerRepo.findOneBy({ id });
+  async getManufacturerById(id: string) {
+    const manufacturer = await this.manufacturerModel.findById(id);
     return manufacturer;
   }
 
   async createNewManufacturer(manufacturerDto: ManufacturerDto) {
-    if (await this.manufacturerRepo.findOneBy({ name: manufacturerDto.name }))
+    if (await this.manufacturerModel.findOne({ name: manufacturerDto.name }))
       throw new HttpException(
         'This value already exists',
         HttpStatus.BAD_REQUEST,
       );
-    const manufacturer = new Manufacturer();
+    const manufacturer = new this.manufacturerModel();
     manufacturer.name = manufacturerDto.name;
-    await this.manufacturerRepo.save(manufacturer);
+    await manufacturer.save();
     return manufacturer;
   }
 
-  async saveImage(id: number, file: Express.Multer.File) {
+  async saveImage(id: string, file: Express.Multer.File) {
     // upload ảnh lên storage
     const image = await this.firebaseService.uploadFile(file, IMAGE_PATH);
     // cập nhật db
-    return await this.manufacturerRepo.update({ id }, { image });
+    return await this.manufacturerModel.findByIdAndUpdate(id, { image });
   }
 
-  async updateManufacturer(id: number, manufacturerDto: ManufacturerDto) {
+  async updateManufacturer(id: string, manufacturerDto: ManufacturerDto) {
     if (
-      (await this.manufacturerRepo.findOneBy({ id }))?.name !==
+      (await this.manufacturerModel.findById(id))?.name !==
         manufacturerDto.name &&
-      (await this.manufacturerRepo.findOneBy({ name: manufacturerDto.name }))
+      (await this.manufacturerModel.findOne({ name: manufacturerDto.name }))
     )
       throw new HttpException(
         'This value already exists',
         HttpStatus.BAD_REQUEST,
       );
-    let toUpdate = await this.manufacturerRepo.findOneBy({ id });
-
-    let updated = Object.assign(toUpdate, manufacturerDto);
-    return await this.manufacturerRepo.save(updated);
+    const updated = await this.manufacturerModel.findByIdAndUpdate(
+      id,
+      manufacturerDto,
+    );
+    return updated;
   }
 
-  async deleteManufacturer(id: number) {
+  async deleteManufacturer(id: string) {
     try {
-      return await this.manufacturerRepo.delete({ id });
+      return await this.manufacturerModel.findByIdAndDelete(id);
     } catch (err) {
       throw new HttpException(
         'This value is still in use',

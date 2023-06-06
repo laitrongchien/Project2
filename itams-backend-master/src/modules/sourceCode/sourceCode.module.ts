@@ -1,24 +1,21 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import SourceCode from 'src/models/entities/sourceCode.entity';
-import SourceCodeToUser from 'src/models/entities/sourceCodeToUser.entity';
-import { SourceCodeRepository } from 'src/models/repositories/sourceCode.repository';
-import { SourceCodeToUserRepository } from 'src/models/repositories/sourceCodeToUser.repository';
+import { MongooseModule } from '@nestjs/mongoose';
+import { SourceCodeSchema } from '../../models/schemas/sourceCode.schema';
+import { SourceCodeToUserSchema } from '../../models/schemas/sourceCodeToUser.schema';
 import { UsersModule } from '../users/users.module';
 import { SourceCodeController } from './sourceCode.controller';
 import { SourceCodeService } from './sourceCode.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([SourceCode, SourceCodeToUser]),
+    MongooseModule.forFeature([
+      { name: 'SourceCode', schema: SourceCodeSchema },
+      { name: 'SourceCodeToUser', schema: SourceCodeToUserSchema },
+    ]),
     forwardRef(() => UsersModule),
   ],
   controllers: [SourceCodeController],
-  providers: [
-    SourceCodeService,
-    SourceCodeRepository,
-    SourceCodeToUserRepository,
-  ],
+  providers: [SourceCodeService],
   exports: [SourceCodeService],
 })
 export class SourceCodeModule {}

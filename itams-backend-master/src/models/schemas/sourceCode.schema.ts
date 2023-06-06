@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IsBoolean } from 'class-validator';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
+import { SourceCodeToUser } from './sourceCodeToUser.schema';
+import { DigitalContentToSourceCode } from './digitalContentToSourceCode.schema';
 
 @Schema()
 export class SourceCode extends Document {
@@ -22,6 +24,21 @@ export class SourceCode extends Document {
 
   @Prop({ default: null })
   deletedAt: Date;
+
+  @Prop({
+    type: [{ type: MongooseSchema.Types.ObjectId, ref: 'sourceCodeToUser' }],
+  })
+  sourceCodeToUsers: SourceCodeToUser[];
+
+  @Prop({
+    type: [
+      {
+        type: MongooseSchema.Types.ObjectId,
+        ref: 'DigitalContentToSourceCode',
+      },
+    ],
+  })
+  digitalContentToSourceCodes: DigitalContentToSourceCode[];
 }
 
 export const SourceCodeSchema = SchemaFactory.createForClass(SourceCode);
