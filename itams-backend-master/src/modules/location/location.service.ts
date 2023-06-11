@@ -27,7 +27,7 @@ export class LocationService {
 
   async getLocationById(id: string) {
     const location = await this.locationModel.findById(id);
-    return location;
+    return location.toObject();
   }
 
   async createNewLocation(locationDto: LocationDto) {

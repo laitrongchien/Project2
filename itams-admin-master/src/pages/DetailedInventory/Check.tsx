@@ -22,7 +22,7 @@ function Check(props: any) {
         newStatusId:
           data.find((status: Status) => {
             return status.name === item.new_status;
-          })?.id ?? 0,
+          })?.id ?? '',
         check: Boolean(event.target.checked),
       });
     } catch (err: any) {

@@ -52,16 +52,16 @@ function DetailedUser() {
             </TabList>
           </Box>
           <TabPanel value="1" sx={{ padding: 0 }}>
-            <UserInfo userId={Number(userId)} />
+            <UserInfo userId={userId} />
           </TabPanel>
           <TabPanel value="2" sx={{ padding: 0 }}>
-            <AssetTable userId={Number(userId)} />
+            <AssetTable userId={userId} />
           </TabPanel>
           <TabPanel value="3" sx={{ padding: 0 }}>
-            <UserToSourceCodeTable userId={Number(userId)} />
+            <UserToSourceCodeTable userId={userId} />
           </TabPanel>
           <TabPanel value="4" sx={{ padding: 0 }}>
-            <AssetHistoryTable userId={Number(userId)} />
+            <AssetHistoryTable userId={userId} />
           </TabPanel>
         </TabContext>
       </Box>

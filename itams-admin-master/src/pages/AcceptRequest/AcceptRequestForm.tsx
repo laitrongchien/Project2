@@ -7,7 +7,7 @@ import { AcceptRequest, Asset, AssetModel } from '../../interface/interface';
 import SelectField from '../../components/FormComponent/SelectField';
 import { useNavigate } from 'react-router-dom';
 import { getAssetsByCategory, acceptRequest } from '../../api/asset';
-import { getAllAssetModels } from '../../api/assetModel';
+// import { getAllAssetModels } from '../../api/assetModel';
 
 function AcceptRequestForm(props: any) {
   const { data, action } = props;

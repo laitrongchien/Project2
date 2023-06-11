@@ -256,7 +256,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 export default function RequestAssetsTable() {
   const [order, setOrder] = React.useState<Order>('desc');
   const [orderBy, setOrderBy] = React.useState<keyof RequestAsset>('status');
-  const [selected, setSelected] = React.useState<readonly number[]>([]);
+  const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(
@@ -267,8 +267,8 @@ export default function RequestAssetsTable() {
   const [rows, setRows] = React.useState<RequestAsset[]>([]);
 
   const [open, setOpen] = React.useState(false);
-  const [idToReject, setIdToReject] = React.useState<number>(0);
-  const handleClickOpen = (id: number) => {
+  const [idToReject, setIdToReject] = React.useState<string>('');
+  const handleClickOpen = (id: string) => {
     setOpen(true);
     setIdToReject(id);
   };
@@ -291,12 +291,12 @@ export default function RequestAssetsTable() {
     getData();
   }, []);
 
-  const handleReject = async (id: number) => {
+  const handleReject = async (id: string) => {
     try {
-      await rejectRequest(+id);
+      await rejectRequest(id);
       handleClose();
       await getData();
-      setIdToReject(0);
+      setIdToReject('');
       toast.success('Rejected');
     } catch (err: any) {
       console.log(err);
@@ -322,9 +322,9 @@ export default function RequestAssetsTable() {
     setSelected([]);
   };
 
-  const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
+  const handleClick = (event: React.MouseEvent<unknown>, id: string) => {
     const selectedIndex = selected.indexOf(id);
-    let newSelected: readonly number[] = [];
+    let newSelected: readonly string[] = [];
 
     if (selectedIndex === -1) {
       newSelected = newSelected.concat(selected, id);
@@ -354,7 +354,7 @@ export default function RequestAssetsTable() {
     setPage(0);
   };
 
-  const isSelected = (id: number) => selected.indexOf(id) !== -1;
+  const isSelected = (id: string) => selected.indexOf(id) !== -1;
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =

@@ -27,14 +27,18 @@ export class UsersService {
   async getAll(userQuery?: UserQueryDto): Promise<any> {
     const users = await this.userModel
       .find({
-        // 'department._id': userQuery.departmentId,
-        department: { _id: userQuery.departmentId },
+        ...(userQuery.departmentId && {
+          department: { _id: userQuery.departmentId },
+        }),
       })
       .populate('department')
       .populate('assetToUsers');
     const res = users.map((user) => {
-      const { department, assetToUsers, password, ...rest } = user.toObject();
+      const { _id, department, assetToUsers, password, ...rest } =
+        user.toObject();
+      // console.log(user);
       return {
+        _id: _id.toString(),
         ...rest,
         department: department?.name,
         assets: assetToUsers?.length,
@@ -45,8 +49,8 @@ export class UsersService {
 
   async getUserByUserId(id: string): Promise<any> {
     const user = await this.userModel.findById(id).populate('department');
-    const { department, password, ...rest } = user.toObject();
-    return { ...rest, department: department?.name };
+    const { _id, department, password, ...rest } = user.toObject();
+    return { _id: _id.toString(), department: department?.name, ...rest };
   }
 
   async createNewUser(userDto: UserDto): Promise<any> {
@@ -128,13 +132,13 @@ export class UsersService {
     const user = await this.userModel.findOne({ username });
 
     if (user) {
-      return user;
+      return user.toObject();
     }
   }
 
   async getUserById(id: string) {
     const user = await this.userModel.findById(id);
-    return user;
+    return user.toObject();
   }
 
   async saveAvatar(user: User, file: Express.Multer.File) {

@@ -1,20 +1,20 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import { useNavigate } from 'react-router-dom';
-import { Badge } from '@mui/material';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
-import List from '@mui/material/List';
-import { formatDate } from '../../helpers/format';
-import { useAuthContext } from '../../context/AuthContext';
+import * as React from "react";
+import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import { useNavigate } from "react-router-dom";
+import { Badge } from "@mui/material";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import ListSubheader from "@mui/material/ListSubheader";
+import List from "@mui/material/List";
+import { formatDate } from "../../helpers/format";
+import { useAuthContext } from "../../context/AuthContext";
 import {
   Notification as NotificationInterface,
   NotificationType,
-} from '../../interface/interface';
+} from "../../interface/interface";
 
 const Notification = () => {
   const navigate = useNavigate();
@@ -52,34 +52,34 @@ const Notification = () => {
         </Badge>
       </IconButton>
       <Menu
-        sx={{ mt: '35px' }}
+        sx={{ mt: "35px" }}
         id="menu-notification"
         anchorEl={anchorEl}
         anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
+          vertical: "top",
+          horizontal: "right",
         }}
         keepMounted
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
+          vertical: "top",
+          horizontal: "right",
         }}
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
         <List
           sx={{
-            width: '100%',
-            minWidth: { md: 360, xs: '60vw' },
-            maxHeight: { md: 360, xs: '60vh' },
-            bgcolor: 'background.paper',
+            width: "100%",
+            minWidth: { md: 360, xs: "60vw" },
+            maxHeight: { md: 360, xs: "60vh" },
+            bgcolor: "background.paper",
           }}
           component="nav"
           dense
           aria-labelledby="nested-list-subheader"
           subheader={
             <ListSubheader component="div" id="nested-list-subheader">
-              You have {notifications?.length ?? 0} items
+              You have {notifications?.length ?? 0} notifications
             </ListSubheader>
           }
         >
@@ -92,11 +92,12 @@ const Notification = () => {
                   navigate(`/licenses`);
               }}
               divider
+              key={notification.itemId}
             >
               <ListItemText
                 primary={notification.name}
                 secondary={`Expires in ${formatDate(
-                  notification.expiration_date,
+                  notification.expiration_date
                 )}`}
               />
             </ListItemButton>

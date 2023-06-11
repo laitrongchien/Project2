@@ -40,7 +40,7 @@ function SelectField(props: any) {
             {data?.map((i: any) => {
               return (
                 <MenuItem key={i.id} value={i.id}>
-                  {`${i.id} - ${i.name}`}
+                  {`${i.name}`}
                 </MenuItem>
               );
             })}

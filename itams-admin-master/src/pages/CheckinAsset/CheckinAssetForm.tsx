@@ -33,11 +33,11 @@ function CheckinAssetForm(props: any) {
     statusId:
       statuses.find((status: Status) => {
         return status.name === data?.status;
-      })?.id ?? 0,
+      })?.id ?? '0',
     departmentId:
       departments.find((department: Department) => {
         return department.name === data?.department;
-      })?.id ?? 0,
+      })?.id ?? '0',
     checkin_date: data?.date ?? dayjs(),
     checkin_note: '',
   };

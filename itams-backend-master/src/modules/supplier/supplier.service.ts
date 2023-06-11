@@ -34,7 +34,7 @@ export class SupplierService {
 
   async getSupplierById(id: string): Promise<Supplier> {
     const supplier = await this.supplierModel.findById(id);
-    return supplier;
+    return supplier.toObject();
   }
 
   async createNewSupplier(supplierDto: SupplierDto): Promise<Supplier> {

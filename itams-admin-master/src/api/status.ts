@@ -3,6 +3,7 @@ import axios from './axios';
 
 export const getAllStatuses = async () => {
   const data = await axios.get('/status/all');
+  console.log(data)
   return data.data;
 };
 

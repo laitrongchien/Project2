@@ -31,7 +31,7 @@ function RequestActions(props: any) {
       <Tooltip title="Reject request">
         <IconButton
           size="small"
-          onClick={() => onClickReject(+id)}
+          onClick={() => onClickReject(id)}
           sx={{
             width: '30px',
             height: '30px',

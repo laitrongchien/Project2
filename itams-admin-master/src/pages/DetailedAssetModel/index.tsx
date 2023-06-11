@@ -39,10 +39,10 @@ function DetailedAssetModel() {
             </TabList>
           </Box>
           <TabPanel value="1" sx={{ padding: 0 }}>
-            <AssetModelInfo assetModelId={Number(modelId)} />
+            <AssetModelInfo assetModelId={modelId} />
           </TabPanel>
           <TabPanel value="2" sx={{ padding: 0 }}>
-            <AssetTable assetModelId={Number(modelId)} />
+            <AssetTable assetModelId={modelId} />
           </TabPanel>
         </TabContext>
       </Box>

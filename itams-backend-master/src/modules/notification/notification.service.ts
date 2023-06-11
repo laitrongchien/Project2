@@ -29,12 +29,13 @@ export class NotificationService {
       .sort({ expiration_date: 1 });
     const res = Promise.all(
       notifications.map(async (notification) => {
+        const rest = notification.toObject();
         const asset = await this.assetService.getAssetById(notification.itemId);
         const license = await this.licenseService.getLicenseById(
           notification.itemId,
         );
         return {
-          ...notification,
+          ...rest,
           name:
             notification.type === NotificationType.ASSET
               ? asset?.name

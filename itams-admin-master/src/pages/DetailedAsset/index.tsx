@@ -45,13 +45,13 @@ function DetailedAsset() {
             </TabList>
           </Box>
           <TabPanel value="1" sx={{ padding: 0 }}>
-            <AssetInfo assetId={Number(assetId)} />
+            <AssetInfo assetId={assetId} />
           </TabPanel>
           <TabPanel value="2" sx={{ padding: 0 }}>
-            <AssetMaintenanceTable assetId={Number(assetId)} />
+            <AssetMaintenanceTable assetId={assetId} />
           </TabPanel>
           <TabPanel value="3" sx={{ padding: 0 }}>
-            <AssetHistoryTable assetId={Number(assetId)} />
+            <AssetHistoryTable assetId={assetId} />
           </TabPanel>
         </TabContext>
       </Box>

@@ -8,6 +8,7 @@ import axios from './axios';
 
 export const getAllSourceCodes = async () => {
   const data = await axios.get('/source-code/all');
+  console.log(data)
   return data.data;
 };
 

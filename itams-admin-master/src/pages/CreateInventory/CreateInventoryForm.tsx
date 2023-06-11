@@ -30,7 +30,7 @@ function CreateInventoryForm(props: any) {
     departmentId:
       departments.find((department: Department) => {
         return department.name === data?.department;
-      })?.id ?? 0,
+      })?.id ?? '',
   };
   useEffect(() => {
     const getData = async () => {

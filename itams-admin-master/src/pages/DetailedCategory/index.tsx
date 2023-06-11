@@ -45,13 +45,13 @@ function DetailedCategory() {
             </TabList>
           </Box>
           <TabPanel value="1" sx={{ padding: 0 }}>
-            <CategoryInfo categoryId={Number(categoryId)} />
+            <CategoryInfo categoryId={categoryId} />
           </TabPanel>
           <TabPanel value="2" sx={{ padding: 0 }}>
-            <AssetModelTable categoryId={Number(categoryId)} />
+            <AssetModelTable categoryId={categoryId} />
           </TabPanel>
           <TabPanel value="3" sx={{ padding: 0 }}>
-            <LicenseTable categoryId={Number(categoryId)} />
+            <LicenseTable categoryId={categoryId} />
           </TabPanel>
         </TabContext>
       </Box>

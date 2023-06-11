@@ -216,6 +216,7 @@ const Header = () => {
                 <MenuListComposition
                   menuList={page.menuList}
                   name={page.name}
+                  key={page.name}
                 />
               ) : (
                 <Button

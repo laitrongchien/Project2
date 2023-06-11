@@ -23,27 +23,29 @@ export class SourceCodeService {
 
   async getAllSourceCodes() {
     const sourceCodes = await this.sourceCodeModel.find();
-    return sourceCodes;
+    const res = sourceCodes.map((sourceCode) => {
+      return sourceCode.toObject();
+    });
+    return res;
+    // return sourceCodes;
   }
 
   async getSourceCodeById(id: string) {
     const sourceCode = await this.sourceCodeModel.findById(id);
-    return sourceCode;
+    return sourceCode.toObject();
   }
 
   async getSourceCodeToUser(
     sourceCodeToUserQueryDto?: SourceCodeToUserQueryDto,
   ): Promise<any> {
-    // console.log(
-    //   sourceCodeToUserQueryDto.userId,
-    //   sourceCodeToUserQueryDto.sourceCodeId,
-    // );
     const sourceCodeToUsers = await this.sourceCodeToUserModel
       .find({
-        // 'user._id': sourceCodeToUserQueryDto.userId,
-        // 'sourceCode._id': sourceCodeToUserQueryDto.sourceCodeId,
-        user: { _id: sourceCodeToUserQueryDto.userId },
-        sourceCode: { _id: sourceCodeToUserQueryDto.sourceCodeId },
+        ...(sourceCodeToUserQueryDto.userId && {
+          user: { _id: sourceCodeToUserQueryDto.userId },
+        }),
+        ...(sourceCodeToUserQueryDto.sourceCodeId && {
+          sourceCode: { _id: sourceCodeToUserQueryDto.sourceCodeId },
+        }),
       })
       .populate('user')
       .populate('sourceCode');

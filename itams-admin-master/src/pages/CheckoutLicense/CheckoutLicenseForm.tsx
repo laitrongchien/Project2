@@ -20,7 +20,7 @@ function CheckoutLicenseForm(props: any) {
   const [assets, setAssets] = useState<Asset[]>([]);
   const initialValues: CheckoutLicense = {
     licenseId: data?.id,
-    assetId: 0,
+    assetId: '',
     checkout_date: data?.date ?? dayjs(),
     checkout_note: '',
   };

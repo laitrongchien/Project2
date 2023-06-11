@@ -37,7 +37,6 @@ import { AssetQueryDto } from './dtos/assetQuery.dto';
 import { CheckinAssetDto } from './dtos/checkinAsset.dto';
 import { CheckoutAssetDto } from './dtos/checkoutAsset.dto';
 import { NewRequestAsset } from './dtos/new-request-asset.dto';
-
 @Injectable()
 export class AssetService {
   private logger = new Logger(AssetService.name);
@@ -67,13 +66,15 @@ export class AssetService {
   async getAll(assetQuery?: AssetQueryDto): Promise<any> {
     const assets = await this.assetModel
       .find({
-        // deletedAt: { $ne: null },
-        // 'assetModel._id': assetQuery.assetModelId,
-        // 'department._id': assetQuery.departmentId,
-        // 'status._id': assetQuery.statusId,
-        assetModel: { _id: assetQuery.assetModelId },
-        department: { _id: assetQuery.departmentId },
-        status: { _id: assetQuery.statusId },
+        deletedAt: null,
+        ...(assetQuery.assetModelId && {
+          assetModel: { _id: assetQuery.assetModelId },
+        }),
+        ...(assetQuery.departmentId && {
+          department: { _id: assetQuery.departmentId },
+        }),
+        ...(assetQuery.statusId && { status: { _id: assetQuery.statusId } }),
+        // ...(assetQuery.userId && { user: { _id: assetQuery.userId } }),
       })
       .populate('assetModel')
       .populate('department')
@@ -94,6 +95,7 @@ export class AssetService {
           const assetToUser = await this.assetToUserModel
             .findOne({
               asset: { _id: asset._id },
+              deletedAt: null,
             })
             .populate('user');
           const user = assetToUser
@@ -110,30 +112,17 @@ export class AssetService {
             user: user,
             check_type: assetToUser ? CheckType.CHECKIN : CheckType.CHECKOUT,
           };
+          // console.log(user._id);
           if (assetQuery.userId) {
-            if (user?._id === assetQuery?.userId) return res;
+            if (user?._id.toString() === assetQuery?.userId) return res;
             else return;
-          }
-          return res;
+          } else return res;
         }),
       )
     ).filter((item) => Boolean(item));
   }
 
   async getDeletedAssets(): Promise<any> {
-    // const assets = await this.assetRepo.find({
-    //   relations: {
-    //     assetModel: true,
-    //     department: true,
-    //     status: true,
-    //     supplier: true,
-    //     assetToUsers: true,
-    //   },
-    //   where: {
-    //     deletedAt: Not(IsNull()),
-    //   },
-    //   withDeleted: true,
-    // });
     const assets = await this.assetModel
       .find({
         deletedAt: { $ne: null },
@@ -193,11 +182,17 @@ export class AssetService {
     //   },
     //   withDeleted: true,
     // });
-    const assetToUsers: AssetToUser[] = await this.assetToUserModel.find({
-      deletedAt: { $ne: null },
-      asset: { _id: assetHistoryQueryDto.assetId },
-      user: { _id: assetHistoryQueryDto.userId },
-    });
+    const assetToUsers: AssetToUser[] = await this.assetToUserModel
+      .find({
+        ...(assetHistoryQueryDto.assetId && {
+          asset: { _id: assetHistoryQueryDto.assetId },
+        }),
+        ...(assetHistoryQueryDto.userId && {
+          user: { _id: assetHistoryQueryDto.userId },
+        }),
+      })
+      .populate('asset')
+      .populate('user');
     return Promise.all(
       assetToUsers.map((assetToUser: AssetToUser) => {
         const { asset, user, ...rest } = assetToUser.toObject();
@@ -213,18 +208,9 @@ export class AssetService {
   }
 
   async getAssetByAssetId(id: string): Promise<any> {
-    // const asset: Asset = await this.assetModel.findById({
-    //   where: { id },
-    //   relations: {
-    //     assetModel: true,
-    //     department: true,
-    //     status: true,
-    //     supplier: true,
-    //     assetToUsers: true,
-    //   },
-    // });
     const asset: Asset = await this.assetModel
-      .findById(id)
+      // .findById(id)
+      .findOne({ _id: id, deletedAt: null })
       .populate('assetModel')
       .populate('department')
       .populate('status')
@@ -357,16 +343,6 @@ export class AssetService {
         NotificationType.LICENSE,
         id,
       );
-      // const toRemove = await this.assetRepo.findOneOrFail({
-      //   where: { id },
-      //   relations: {
-      //     assetToUsers: true,
-      //     assetMaintenances: true,
-      //     licenseToAssets: true,
-      //   },
-      // });
-      // return await this.assetRepo.softRemove(toRemove);
-      // return await this.assetModel.findByIdAndDelete(id);
       const toRemove = await this.assetModel
         .findById(id)
         .populate('assetToUsers')
@@ -385,13 +361,19 @@ export class AssetService {
   /*------------------------ checkin/checkout asset ------------------------- */
 
   async checkoutAsset(checkoutAssetDto: CheckoutAssetDto) {
-    const asset = await this.assetModel.findById(checkoutAssetDto.assetId);
+    // const asset = await this.assetModel.findById(checkoutAssetDto.assetId);
+    const asset = await this.assetModel.findOne({
+      _id: checkoutAssetDto.assetId,
+      deletedAt: null,
+    });
     const user = await this.userService.getUserById(checkoutAssetDto.userId);
+
+    const department = await this.departmentService.getDepartmentById(
+      user?.department._id,
+    );
+    // console.log(user);
     const status = await this.statusService.getStatusById(
       checkoutAssetDto.statusId,
-    );
-    const department = await this.departmentService.getDepartmentByUserId(
-      user._id,
     );
     asset.status = status;
     asset.department = department;
@@ -407,8 +389,11 @@ export class AssetService {
   }
 
   async checkinAsset(checkinAssetDto: CheckinAssetDto) {
-    const asset = await this.assetModel.findById(checkinAssetDto.assetId);
-    // console.log(asset);
+    // const asset = await this.assetModel.findById(checkinAssetDto.assetId);
+    const asset = await this.assetModel.findOne({
+      _id: checkinAssetDto.assetId,
+      deletedAt: null,
+    });
     const department = await this.departmentService.getDepartmentById(
       checkinAssetDto.departmentId,
     );
@@ -416,24 +401,25 @@ export class AssetService {
       checkinAssetDto.statusId,
     );
     const assetToUser = await this.assetToUserModel.findOne({
-      // 'asset._id': checkinAssetDto.assetId,
       asset: { _id: checkinAssetDto.assetId },
+      deletedAt: null,
     });
     asset.department = department;
     asset.status = status;
     assetToUser.checkin_date = checkinAssetDto.checkin_date;
     assetToUser.checkin_note = checkinAssetDto.checkin_note;
+    // Implement soft delete
+    assetToUser.deletedAt = new Date(Date.now());
     await asset.save();
     await assetToUser.save();
-    // Implement soft delete
-    // await this.assetToUserRepo.softDelete({
-    //   asset: { id: checkinAssetDto.assetId },
-    // });
     return assetToUser;
   }
 
   async getAssetById(id: string) {
-    const asset: Asset = await this.assetModel.findById(id);
+    const asset: Asset = await this.assetModel.findOne({
+      _id: id,
+      deletedAt: null,
+    });
     return asset;
   }
 
@@ -442,7 +428,7 @@ export class AssetService {
   async getAssetsByDepartmentId(id: string) {
     const assets = await this.assetModel
       .find({
-        // 'department._id': id,
+        deletedAt: null,
         department: { _id: id },
       })
       .populate('status');
@@ -450,7 +436,8 @@ export class AssetService {
   }
 
   async saveAssetAfterInventory(id: string, statusId: string, newCost: number) {
-    const asset = await this.assetModel.findById(id);
+    // const asset = await this.assetModel.findById(id);
+    const asset = await this.assetModel.findOne({ _id: id, deletedAt: null });
     const status = await this.statusService.getStatusById(statusId);
     asset.status = status;
     asset.current_cost = newCost;
@@ -467,7 +454,6 @@ export class AssetService {
       assetModels.map(async (assetModel: AssetModel) => {
         return await this.assetModel
           .find({
-            // 'assetModel._id': assetModel._id,
             assetModel: { _id: assetModel._id },
           })
           .populate('assetToUsers');
@@ -480,9 +466,6 @@ export class AssetService {
   }
 
   async getAllRequestAssets(): Promise<any> {
-    // const requestAsset = await this.requestAssetRepo.find({
-    //   relations: { category: true, user: true },
-    // });
     const requestAsset = await this.requestAssetModel
       .find()
       .populate('category')

@@ -57,7 +57,7 @@ function Actions(props: any) {
         <Tooltip title="Delete">
           <IconButton
             size="small"
-            onClick={() => onClickDelete(+id)}
+            onClick={() => onClickDelete(id)}
             sx={{
               width: '30px',
               height: '30px',

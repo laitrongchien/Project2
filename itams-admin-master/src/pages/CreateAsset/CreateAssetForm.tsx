@@ -46,19 +46,19 @@ function CreateAssetForm(props: any) {
     assetModelId:
       assetModels.find((assetModel: AssetModel) => {
         return assetModel.name === data?.assetModel;
-      })?.id ?? 0,
+      })?.id ?? '',
     departmentId:
       departments.find((department: Department) => {
         return department.name === data?.department;
-      })?.id ?? 0,
+      })?.id ?? '',
     statusId:
       statuses.find((status: Status) => {
         return status.name === data?.status;
-      })?.id ?? 0,
+      })?.id ?? '',
     supplierId:
       suppliers.find((supplier: Supplier) => {
         return supplier.name === data?.supplier;
-      })?.id ?? 0,
+      })?.id ?? '',
   };
   const validationSchema = Yup.object({
     purchase_cost: Yup.number()
@@ -70,8 +70,11 @@ function CreateAssetForm(props: any) {
     const getData = async () => {
       try {
         const assetModels: AssetModel[] = await getAllAssetModels();
+        console.log(assetModels)
         const departments: Department[] = await getAllDepartments();
+        // console.log(departments)
         const statuses: Status[] = await getAllStatuses();
+        // console.log(statuses)
         const suppliers: Supplier[] = await getAllSuppliers();
         setAssetModels(assetModels);
         setDepartments(departments);
@@ -87,9 +90,9 @@ function CreateAssetForm(props: any) {
   const handleSubmit = async (newAsset: NewAsset) => {
     setLoading(true);
     try {
-      if (action === Actions.UPDATE) await updateAsset(data._id, newAsset);
+      if (action === Actions.UPDATE) await updateAsset(data.id, newAsset);
       else await createNewAsset(newAsset);
-      if (image.length > 0) await saveImage(data._id, image[0].file);
+      if (image.length > 0) await saveImage(data.id, image[0].file);
       await getNotifications();
       navigate(-1);
       toast.success(

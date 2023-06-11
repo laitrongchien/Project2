@@ -3,6 +3,7 @@ import axios from './axios';
 
 export const getAllUsers = async (userQuery?: UserQuery) => {
   const response = await axios.get('/user/all-users', { params: userQuery });
+  // console.log(response.data);
   return response.data;
 };
 

@@ -41,10 +41,10 @@ function DetailedLocation() {
             </TabList>
           </Box>
           <TabPanel value="1" sx={{ padding: 0 }}>
-            <LocationInfo locationId={Number(locationId)} />
+            <LocationInfo locationId={locationId} />
           </TabPanel>
           <TabPanel value="2" sx={{ padding: 0 }}>
-            <DepartmentTable locationId={Number(locationId)} />
+            <DepartmentTable locationId={locationId} />
           </TabPanel>
         </TabContext>
       </Box>

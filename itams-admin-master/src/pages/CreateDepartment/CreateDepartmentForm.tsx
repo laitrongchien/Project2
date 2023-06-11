@@ -20,12 +20,13 @@ function CreateDepartmentForm(props: any) {
     locationId:
       locations.find((location: Location) => {
         return location.name === data?.location;
-      })?.id ?? 0,
+      })?.id ?? '',
   };
   useEffect(() => {
     const getData = async () => {
       try {
         const locations: Location[] = await getAllLocations();
+        // console.log(locations);
         setLocations(locations);
       } catch (err) {
         console.log(err);

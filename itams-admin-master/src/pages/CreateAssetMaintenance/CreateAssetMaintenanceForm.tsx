@@ -36,11 +36,11 @@ function CreateAssetMaintenanceForm(props: any) {
     assetId:
       assets.find((asset: Asset) => {
         return asset.id === data?.asset_id;
-      })?.id ?? 0,
+      })?.id ?? '',
     supplierId:
       suppliers.find((supplier: Supplier) => {
         return supplier.name === data?.supplier;
-      })?.id ?? 0,
+      })?.id ?? '',
   };
   const validationSchema = Yup.object({
     cost: Yup.number()

@@ -32,6 +32,7 @@ import { getPref, Prefs, setPref } from '../../prefs';
 import { Status } from '../../interface/interface';
 import { Link } from 'react-router-dom';
 
+// Compares two objects based on one of their properties.
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
@@ -44,6 +45,7 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
 
 type Order = 'asc' | 'desc';
 
+// Comparator function based on the order and orderBy input parameters.
 function getComparator<Key extends keyof any>(
   order: Order,
   orderBy: Key,
@@ -58,6 +60,8 @@ function getComparator<Key extends keyof any>(
 
 // This method is created for cross-browser compatibility, if you don't
 // need to support IE11, you can use Array.prototype.sort() directly
+
+// Array sort is based on a custom comparison function and ensures the stability of the sort, which preserves the original sequence of elements with the same value after sorting.
 function stableSort<T>(
   array: readonly T[],
   comparator: (a: T, b: T) => number,
@@ -238,7 +242,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 export default function StatusTable() {
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Status>('id');
-  const [selected, setSelected] = React.useState<readonly number[]>([]);
+  const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(
@@ -249,8 +253,9 @@ export default function StatusTable() {
   const [rows, setRows] = React.useState<Status[]>([]);
 
   const [open, setOpen] = React.useState(false);
-  const [idToDelete, setIdToDelete] = React.useState<number>(0);
-  const handleClickOpen = (id: number) => {
+  // Update
+  const [idToDelete, setIdToDelete] = React.useState<string>('');
+  const handleClickOpen = (id: string) => {
     setOpen(true);
     setIdToDelete(id);
   };
@@ -273,12 +278,12 @@ export default function StatusTable() {
     getData();
   }, []);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
       await deleteStatus(id);
       handleClose();
       await getData();
-      setIdToDelete(0);
+      setIdToDelete('');
       toast.success('Deleted');
     } catch (err: any) {
       console.log(err);
@@ -304,9 +309,10 @@ export default function StatusTable() {
     setSelected([]);
   };
 
-  const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
+// Handle click in checkbox
+  const handleClick = (event: React.MouseEvent<unknown>, id: string) => {
     const selectedIndex = selected.indexOf(id);
-    let newSelected: readonly number[] = [];
+    let newSelected: readonly string[] = [];
 
     if (selectedIndex === -1) {
       newSelected = newSelected.concat(selected, id);
@@ -335,8 +341,8 @@ export default function StatusTable() {
     setPref(Prefs.ROWS_PER_PAGE, event.target.value);
     setPage(0);
   };
-
-  const isSelected = (id: number) => selected.indexOf(id) !== -1;
+  // Update
+  const isSelected = (id: string) => selected.indexOf(id) !== -1;
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =

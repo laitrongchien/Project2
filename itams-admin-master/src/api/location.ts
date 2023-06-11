@@ -3,6 +3,7 @@ import axios from './axios';
 
 export const getAllLocations = async () => {
   const data = await axios.get('/location/all');
+  console.log(data.data)
   return data.data;
 };
 

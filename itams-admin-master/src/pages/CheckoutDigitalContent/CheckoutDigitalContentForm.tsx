@@ -20,7 +20,7 @@ function CheckoutSourceCodeForm(props: any) {
   const [sourceCodes, setSourceCodes] = useState<SourceCode[]>([]);
   const initialValues: CheckoutDigitalContent = {
     digitalContentId: data?.id,
-    sourceCodeId: 0,
+    sourceCodeId: '',
     checkout_date: data?.date ?? dayjs(),
     checkout_note: '',
   };

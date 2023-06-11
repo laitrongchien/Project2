@@ -255,7 +255,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 export default function InventoryTable() {
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Inventory>('id');
-  const [selected, setSelected] = React.useState<readonly number[]>([]);
+  const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(
@@ -266,8 +266,8 @@ export default function InventoryTable() {
   const [rows, setRows] = React.useState<Inventory[]>([]);
 
   const [open, setOpen] = React.useState(false);
-  const [idToDelete, setIdToDelete] = React.useState<number>(0);
-  const handleClickOpen = (id: number) => {
+  const [idToDelete, setIdToDelete] = React.useState<string>('');
+  const handleClickOpen = (id: string) => {
     setOpen(true);
     setIdToDelete(id);
   };
@@ -308,9 +308,9 @@ export default function InventoryTable() {
     setSelected([]);
   };
 
-  const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
+  const handleClick = (event: React.MouseEvent<unknown>, id: string) => {
     const selectedIndex = selected.indexOf(id);
-    let newSelected: readonly number[] = [];
+    let newSelected: readonly string[] = [];
 
     if (selectedIndex === -1) {
       newSelected = newSelected.concat(selected, id);
@@ -340,7 +340,7 @@ export default function InventoryTable() {
     setPage(0);
   };
 
-  const isSelected = (id: number) => selected.indexOf(id) !== -1;
+  const isSelected = (id: string) => selected.indexOf(id) !== -1;
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =

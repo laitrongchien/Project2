@@ -45,16 +45,16 @@ function DetailedDigitalContent() {
             </TabList>
           </Box>
           <TabPanel value="1" sx={{ padding: 0 }}>
-            <DigitalContentInfo digitalContentId={Number(digitalContentId)} />
+            <DigitalContentInfo digitalContentId={digitalContentId} />
           </TabPanel>
           <TabPanel value="2" sx={{ padding: 0 }}>
             <DigitalContentToAssetTable
-              digitalContentId={Number(digitalContentId)}
+              digitalContentId={digitalContentId}
             />
           </TabPanel>
           <TabPanel value="3" sx={{ padding: 0 }}>
             <DigitalContentHistoryTable
-              digitalContentId={Number(digitalContentId)}
+              digitalContentId={digitalContentId}
               withDeleted={true}
             />
           </TabPanel>

@@ -45,13 +45,13 @@ function DetailedManufacturer() {
             </TabList>
           </Box>
           <TabPanel value="1" sx={{ padding: 0 }}>
-            <ManufacturerInfo manufacturerId={Number(manufacturerId)} />
+            <ManufacturerInfo manufacturerId={manufacturerId} />
           </TabPanel>
           <TabPanel value="2" sx={{ padding: 0 }}>
-            <AssetModelTable manufacturerId={Number(manufacturerId)} />
+            <AssetModelTable manufacturerId={manufacturerId} />
           </TabPanel>
           <TabPanel value="3" sx={{ padding: 0 }}>
-            <LicenseTable manufacturerId={Number(manufacturerId)} />
+            <LicenseTable manufacturerId={manufacturerId} />
           </TabPanel>
         </TabContext>
       </Box>

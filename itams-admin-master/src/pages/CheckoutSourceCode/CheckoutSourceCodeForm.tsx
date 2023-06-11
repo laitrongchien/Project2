@@ -20,7 +20,7 @@ function CheckoutSourceCodeForm(props: any) {
   const [users, setUsers] = useState<User[]>([]);
   const initialValues: CheckoutSourceCode = {
     sourceCodeId: data?.id,
-    userId: 0,
+    userId: '',
     start_date: data?.date ?? dayjs(),
     start_note: '',
   };

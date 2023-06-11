@@ -10,13 +10,14 @@ import DetailedInventoryTable from './DetailedInventoryTable';
 
 function DetailedInventory() {
   const { inventoryId } = useParams();
+  // console.log(inventoryId);
   const [isLoading, setIsLoading] = React.useState(false);
   const [initRows, setInitRows] = React.useState<AssetToInventory[]>([]);
   const [statuses, setStatuses] = React.useState<Status[]>([]);
   const getData = async () => {
     setIsLoading(true);
     try {
-      const asset = await getAssetToInventoryByInventoryId(Number(inventoryId));
+      const asset = await getAssetToInventoryByInventoryId(String(inventoryId));
       const statuses = await getAllStatuses();
       setInitRows(asset);
       setStatuses(statuses);

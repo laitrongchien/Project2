@@ -39,10 +39,10 @@ function DetailedStatus() {
             </TabList>
           </Box>
           <TabPanel value="1" sx={{ padding: 0 }}>
-            <StatusInfo statusId={Number(statusId)} />
+            <StatusInfo statusId={statusId} />
           </TabPanel>
           <TabPanel value="2" sx={{ padding: 0 }}>
-            <AssetTable statusId={Number(statusId)} />
+            <AssetTable statusId={statusId} />
           </TabPanel>
         </TabContext>
       </Box>

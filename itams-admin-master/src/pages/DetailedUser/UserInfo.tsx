@@ -76,8 +76,8 @@ export default function UserInfo(props: any) {
   const [rows, setRows] = React.useState<User>();
 
   const [open, setOpen] = React.useState(false);
-  const [idToDelete, setIdToDelete] = React.useState<number>(0);
-  const handleClickOpen = (id: number) => {
+  const [idToDelete, setIdToDelete] = React.useState<string>('');
+  const handleClickOpen = (id: string) => {
     setOpen(true);
     setIdToDelete(id);
   };
@@ -90,7 +90,7 @@ export default function UserInfo(props: any) {
     try {
       const user: User = await getUserById(userId);
       user.birthday = formatDate(user.birthday);
-      console.log(user);
+      // console.log(user);
       setRows(user);
     } catch (err) {
       console.log(err);
@@ -101,12 +101,12 @@ export default function UserInfo(props: any) {
     getData();
   }, []);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
       await deleteUser(id);
       handleClose();
       await getData();
-      setIdToDelete(0);
+      setIdToDelete('');
       await getNotifications();
       toast.success('Deleted');
     } catch (err: any) {

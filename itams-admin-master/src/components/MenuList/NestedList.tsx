@@ -40,6 +40,7 @@ export default function NestedList(props: any) {
         <List component="div" disablePadding>
           {data.menuList.map((item: MenuItemInterface) => (
             <ListItemButton
+              key={item.name}
               onClick={() => navigate(item.destination)}
               sx={{ pl: 1 }}
             >

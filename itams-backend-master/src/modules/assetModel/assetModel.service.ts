@@ -24,10 +24,12 @@ export class AssetModelService {
   async getAllAssetModels(assetModelQuery?: AssetModelQueryDto): Promise<any> {
     const assetModels = await this.assetModelModel
       .find({
-        // 'category._id': assetModelQuery.categoryId,
-        // 'manufacturer._id': assetModelQuery.manufacturerId,
-        category: { _id: assetModelQuery.categoryId },
-        manufacturer: { _id: assetModelQuery.manufacturerId },
+        ...(assetModelQuery.categoryId && {
+          category: { _id: assetModelQuery.categoryId },
+        }),
+        ...(assetModelQuery.manufacturerId && {
+          manufacturer: { _id: assetModelQuery.manufacturerId },
+        }),
       })
       .populate('assets')
       .populate('category')

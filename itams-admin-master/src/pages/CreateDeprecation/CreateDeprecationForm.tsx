@@ -22,7 +22,7 @@ function CreateDeprecationForm(props: any) {
     categoryId:
       categories.find((category: Category) => {
         return category.name === data?.category;
-      })?.id ?? 0,
+      })?.id ?? '',
   };
   const validationSchema = Yup.object({
     months: Yup.number()

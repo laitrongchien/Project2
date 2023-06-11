@@ -45,13 +45,13 @@ function DetailedSupplier() {
             </TabList>
           </Box>
           <TabPanel value="1" sx={{ padding: 0 }}>
-            <SupplierInfo supplierId={Number(supplierId)} />
+            <SupplierInfo supplierId={supplierId} />
           </TabPanel>
           <TabPanel value="2" sx={{ padding: 0 }}>
-            <AssetTable supplierId={Number(supplierId)} />
+            <AssetTable supplierId={supplierId} />
           </TabPanel>
           <TabPanel value="3" sx={{ padding: 0 }}>
-            <LicenseTable supplierId={Number(supplierId)} />
+            <LicenseTable supplierId={supplierId} />
           </TabPanel>
         </TabContext>
       </Box>

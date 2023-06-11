@@ -33,7 +33,7 @@ export class StatusService {
 
   async getStatusById(id: string) {
     const status = await this.statusModel.findById(id);
-    return status;
+    return status.toObject();
   }
 
   async createNewStatus(statusDto: StatusDto) {

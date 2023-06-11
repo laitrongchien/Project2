@@ -29,7 +29,7 @@ function CreateUserForm(props: any) {
     departmentId:
       departments.find((department: Department) => {
         return department.name === data?.department;
-      })?.id ?? 0,
+      })?.id ?? '',
   };
   const validationSchema = Yup.object({
     email: Yup.string().email('Invalid email'),

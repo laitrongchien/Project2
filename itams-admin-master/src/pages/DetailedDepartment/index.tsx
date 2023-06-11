@@ -47,13 +47,13 @@ function DetailedDepartment() {
             </TabList>
           </Box>
           <TabPanel value="1" sx={{ padding: 0 }}>
-            <DepartmentInfo departmentId={Number(departmentId)} />
+            <DepartmentInfo departmentId={departmentId} />
           </TabPanel>
           <TabPanel value="2" sx={{ padding: 0 }}>
-            <AssetTable departmentId={Number(departmentId)} />
+            <AssetTable departmentId={departmentId} />
           </TabPanel>
           <TabPanel value="3" sx={{ padding: 0 }}>
-            <UserTable departmentId={Number(departmentId)} />
+            <UserTable departmentId={departmentId} />
           </TabPanel>
         </TabContext>
       </Box>

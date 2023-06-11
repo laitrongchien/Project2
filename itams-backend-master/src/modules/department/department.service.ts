@@ -22,7 +22,9 @@ export class DepartmentService {
     const departments = await this.departmentModel
       .find({
         // 'location._id': departmentQuery.locationId,
-        location: { _id: departmentQuery.locationId },
+        ...(departmentQuery.locationId && {
+          location: { _id: departmentQuery.locationId },
+        }),
       })
       .populate('assets')
       .populate('users')
@@ -61,13 +63,6 @@ export class DepartmentService {
   async getDepartmentByLocationId(id: string) {
     const department = await this.departmentModel.findOne({
       location: { _id: id },
-    });
-    return department;
-  }
-
-  async getDepartmentByUserId(id: string) {
-    const department = await this.departmentModel.findOne({
-      users: { _id: id },
     });
     return department;
   }

@@ -25,6 +25,7 @@ export const getAssetHistory = async (
   const response = await axios.get('/asset/asset-history', {
     params: AssetHistoryQuery,
   });
+  console.log(response.data);
   return response.data;
 };
 

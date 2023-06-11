@@ -64,8 +64,8 @@ export default function AssetModelInfo(props: any) {
   const [rows, setRows] = React.useState<AssetModel>();
 
   const [open, setOpen] = React.useState(false);
-  const [idToDelete, setIdToDelete] = React.useState<number>(0);
-  const handleClickOpen = (id: number) => {
+  const [idToDelete, setIdToDelete] = React.useState<string>('');
+  const handleClickOpen = (id: string) => {
     setOpen(true);
     setIdToDelete(id);
   };
@@ -77,7 +77,7 @@ export default function AssetModelInfo(props: any) {
   const getData = async () => {
     try {
       const assetModel: AssetModel = await getAssetModelById(assetModelId);
-      console.log(assetModel);
+      // console.log(assetModel);
       setRows(assetModel);
     } catch (err) {
       console.log(err);
@@ -88,12 +88,12 @@ export default function AssetModelInfo(props: any) {
     getData();
   }, []);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
       await deleteAssetModel(id);
       handleClose();
       await getData();
-      setIdToDelete(0);
+      setIdToDelete('');
       await getNotifications();
       toast.success('Deleted');
     } catch (err: any) {

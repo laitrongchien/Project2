@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema, Model, Query } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 import { AssetModel } from './assetModel.schema';
 import { Department } from './department.schema';
 import { Supplier } from './supplier.schema';
@@ -60,28 +60,6 @@ export class Asset extends Document {
 
   @Prop({ default: null })
   deletedAt: Date;
-
-  toJSON() {
-    const { _id, ...obj } = this.toObject();
-    obj.id = _id;
-    return obj;
-  }
 }
 
 export const AssetSchema = SchemaFactory.createForClass(Asset);
-
-// eslint-disable-next-line @typescript-eslint/ban-types
-AssetSchema.pre<Model<any>>(/^find/, function (next) {
-  this.find({ deletedAt: null });
-  next();
-});
-
-// AssetSchema.methods.softDelete = function () {
-//   this.deletedAt = new Date(Date.now());
-//   return this.save();
-// };
-
-// Model methods to include soft-deleted records in the query
-// AssetSchema.methods.findInCludeSoftDeleted = function (): Promise<any> {
-//   return this.find();
-// };

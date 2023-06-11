@@ -37,7 +37,7 @@ export class ManufacturerService {
 
   async getManufacturerById(id: string) {
     const manufacturer = await this.manufacturerModel.findById(id);
-    return manufacturer;
+    return manufacturer.toObject();
   }
 
   async createNewManufacturer(manufacturerDto: ManufacturerDto) {

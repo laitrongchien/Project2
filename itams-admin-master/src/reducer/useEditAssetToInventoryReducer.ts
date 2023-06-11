@@ -9,7 +9,7 @@ export const enum ActionTypes {
 
 interface Actions {
   type: ActionTypes;
-  id: number;
+  id: string;
   value: string | number | boolean;
 }
 

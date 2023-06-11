@@ -40,15 +40,15 @@ function CreateLicenseForm(props: any) {
     categoryId:
       categories.find((category: Category) => {
         return category.name === data?.category;
-      })?.id ?? 0,
+      })?.id ?? '',
     manufacturerId:
       manufacturers.find((manufacturer: Manufacturer) => {
         return manufacturer.name === data?.manufacturer;
-      })?.id ?? 0,
+      })?.id ?? '',
     supplierId:
       suppliers.find((supplier: Supplier) => {
         return supplier.name === data?.supplier;
-      })?.id ?? 0,
+      })?.id ?? '',
   };
   const validationSchema = Yup.object({
     purchase_cost: Yup.number()

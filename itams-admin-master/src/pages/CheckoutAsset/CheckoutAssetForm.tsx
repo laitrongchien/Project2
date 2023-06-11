@@ -30,11 +30,11 @@ function CheckoutAssetForm(props: any) {
   const [statuses, setStatuses] = useState<Status[]>([]);
   const initialValues: CheckoutAsset = {
     assetId: data?.id,
-    userId: 0,
+    userId: '',
     statusId:
       statuses.find((status: Status) => {
         return status.name === data?.status;
-      })?.id ?? 0,
+      })?.id ?? '0',
     checkout_date: data?.date ?? dayjs(),
     checkout_note: '',
   };

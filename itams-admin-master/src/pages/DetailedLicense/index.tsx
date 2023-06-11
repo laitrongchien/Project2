@@ -45,14 +45,14 @@ function DetailedLicense() {
             </TabList>
           </Box>
           <TabPanel value="1" sx={{ padding: 0 }}>
-            <LicenseInfo licenseId={Number(licenseId)} />
+            <LicenseInfo licenseId={licenseId} />
           </TabPanel>
           <TabPanel value="2" sx={{ padding: 0 }}>
-            <LicenseToAssetTable licenseId={Number(licenseId)} />
+            <LicenseToAssetTable licenseId={licenseId} />
           </TabPanel>
           <TabPanel value="3" sx={{ padding: 0 }}>
             <LicenseHistoryTable
-              licenseId={Number(licenseId)}
+              licenseId={licenseId}
               withDeleted={true}
             />
           </TabPanel>

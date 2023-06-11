@@ -23,12 +23,16 @@ export class DigitalContentService {
 
   async getAllDigitalContents() {
     const digitalContents = await this.digitalContentModel.find();
-    return digitalContents;
+    const res = digitalContents.map((digitalContent) =>
+      digitalContent.toObject(),
+    );
+    return res;
+    // return digitalContents;
   }
 
   async getDigitalContentById(id: string) {
     const digitalContent = await this.digitalContentModel.findById(id);
-    return digitalContent;
+    return digitalContent.toObject();
   }
 
   async getDigitalContentToSourceCode(
@@ -47,10 +51,14 @@ export class DigitalContentService {
     // });
     const sourceCodeToUsers = await this.digitalContentToSourceCodeModel
       .find({
-        // 'sourceCode._id': digitalContentToSourceCodeDto.sourceCodeId,
-        // 'digitalContent._id': digitalContentToSourceCodeDto.digitalContentId,
-        sourceCode: { _id: digitalContentToSourceCodeDto.sourceCodeId },
-        digitalContent: { _id: digitalContentToSourceCodeDto.digitalContentId },
+        ...(digitalContentToSourceCodeDto.sourceCodeId && {
+          sourceCode: { _id: digitalContentToSourceCodeDto.sourceCodeId },
+        }),
+        ...(digitalContentToSourceCodeDto.digitalContentId && {
+          digitalContent: {
+            _id: digitalContentToSourceCodeDto.digitalContentId,
+          },
+        }),
       })
       .populate('sourceCode')
       .populate('digitalContent');

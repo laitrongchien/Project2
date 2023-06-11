@@ -101,8 +101,8 @@ export default function LicenseInfo(props: any) {
   const [rows, setRows] = React.useState<License>();
 
   const [open, setOpen] = React.useState(false);
-  const [idToDelete, setIdToDelete] = React.useState<number>(0);
-  const handleClickOpen = (id: number) => {
+  const [idToDelete, setIdToDelete] = React.useState<string>('');
+  const handleClickOpen = (id: string) => {
     setOpen(true);
     setIdToDelete(id);
   };
@@ -127,12 +127,12 @@ export default function LicenseInfo(props: any) {
     getData();
   }, []);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
       await deleteLicense(id);
       handleClose();
       await getData();
-      setIdToDelete(0);
+      setIdToDelete('');
       await getNotifications();
       toast.success('Deleted');
     } catch (err: any) {

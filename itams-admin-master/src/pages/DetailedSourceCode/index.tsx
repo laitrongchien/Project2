@@ -51,19 +51,19 @@ function DetailedSourceCode() {
             </TabList>
           </Box>
           <TabPanel value="1" sx={{ padding: 0 }}>
-            <SourceCodeInfo sourceCodeId={Number(sourceCodeId)} />
+            <SourceCodeInfo sourceCodeId={sourceCodeId} />
           </TabPanel>
           <TabPanel value="2" sx={{ padding: 0 }}>
-            <SourceCodeToAssetTable sourceCodeId={Number(sourceCodeId)} />
+            <SourceCodeToAssetTable sourceCodeId={sourceCodeId} />
           </TabPanel>
           <TabPanel value="3" sx={{ padding: 0 }}>
             <SourceCodeToDigitalContentTable
-              sourceCodeId={Number(sourceCodeId)}
+              sourceCodeId={sourceCodeId}
             />
           </TabPanel>
           <TabPanel value="4" sx={{ padding: 0 }}>
             <SourceCodeHistoryTable
-              sourceCodeId={Number(sourceCodeId)}
+              sourceCodeId={sourceCodeId}
               withDeleted={true}
             />
           </TabPanel>

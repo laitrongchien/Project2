@@ -47,12 +47,15 @@ export class LicenseService {
   async getAll(licenseQuery?: LicenseQueryDto): Promise<any> {
     const licenses = await this.licenseModel
       .find({
-        // 'category._id': licenseQuery.categoryId,
-        // 'manufacturer._id': licenseQuery.manufacturerId,
-        // 'supplier._id': licenseQuery.supplierId,
-        category: { _id: licenseQuery.categoryId },
-        manufacturer: { _id: licenseQuery.manufacturerId },
-        supplier: { _id: licenseQuery.supplierId },
+        ...(licenseQuery.categoryId && {
+          category: { _id: licenseQuery.categoryId },
+        }),
+        ...(licenseQuery.manufacturerId && {
+          manufacturer: { _id: licenseQuery.manufacturerId },
+        }),
+        ...(licenseQuery.supplierId && {
+          supplier: { _id: licenseQuery.supplierId },
+        }),
       })
       .populate('category')
       .populate('manufacturer')
@@ -105,10 +108,12 @@ export class LicenseService {
     //   withDeleted: licenseToAssetQueryDto.withDeleted,
     const licenseToAssets = await this.licenseToAssetModel
       .find({
-        // 'asset._id': licenseToAssetQueryDto.assetId,
-        // 'license._id': licenseToAssetQueryDto.licenseId,
-        asset: { _id: licenseToAssetQueryDto.assetId },
-        license: { _id: licenseToAssetQueryDto.licenseId },
+        ...(licenseToAssetQueryDto.assetId && {
+          asset: { _id: licenseToAssetQueryDto.assetId },
+        }),
+        ...(licenseToAssetQueryDto.licenseId && {
+          license: { _id: licenseToAssetQueryDto.licenseId },
+        }),
       })
       .populate('asset')
       .populate('license');
