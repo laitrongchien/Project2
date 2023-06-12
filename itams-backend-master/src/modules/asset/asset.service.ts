@@ -314,7 +314,10 @@ export class AssetService {
   }
 
   async updateAsset(id: string, assetDto: AssetDto) {
-    const toUpdate = await this.assetModel.findById(id);
+    const toUpdate = await this.assetModel.findOne({
+      _id: id,
+      deletedAt: null,
+    });
     const { assetModelId, departmentId, statusId, supplierId, ...rest } =
       assetDto;
     const assetModel = await this.assetModelService.getAssetModelById(
@@ -340,7 +343,7 @@ export class AssetService {
   async deleteAsset(id: string) {
     try {
       await this.notificationService.deleteNotification(
-        NotificationType.LICENSE,
+        NotificationType.ASSET,
         id,
       );
       const toRemove = await this.assetModel

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AssetSchema } from '../../models/schemas/asset.schema';
 import { AssetModelSchema } from '../../models/schemas/assetModel.schema';
 import { AssetModelController } from './assetModel.controller';
 import { AssetModelService } from './assetModel.service';
@@ -10,6 +11,7 @@ import { ManufacturerModule } from '../manufacturer/manufacturer.module';
   imports: [
     MongooseModule.forFeature([
       { name: 'AssetModel', schema: AssetModelSchema },
+      { name: 'Asset', schema: AssetSchema },
     ]),
     CategoryModule,
     ManufacturerModule,

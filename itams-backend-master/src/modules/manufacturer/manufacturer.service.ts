@@ -2,6 +2,8 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Manufacturer } from '../../models/schemas/manufacturer.schema';
+import { AssetModel } from '../../models/schemas/assetModel.schema';
+import { License } from '../../models/schemas/license.schema';
 import { FirebaseService } from '../firebase/firebase.service';
 import { ManufacturerDto } from './dtos/manufacturer.dto';
 import { IMAGE_PATH } from './manufacturer.constants';
@@ -13,25 +15,36 @@ export class ManufacturerService {
   constructor(
     @InjectModel(Manufacturer.name)
     private readonly manufacturerModel: Model<Manufacturer>,
+    @InjectModel(AssetModel.name)
+    private readonly assetModelModel: Model<AssetModel>,
+    @InjectModel(License.name)
+    private readonly licenseModel: Model<License>,
     private firebaseService: FirebaseService,
   ) {}
 
   async getAllManufacturers(): Promise<any> {
-    // const manufacturers = await this.manufacturerModel.find({
-    //   relations: { assetModels: true, licenses: true },
-    // });
     const manufacturers = await this.manufacturerModel
       .find()
       .populate('assetModels')
       .populate('licenses');
-    const res = manufacturers.map((manufacturer) => {
-      const { assetModels, licenses, ...rest } = manufacturer.toObject();
-      return {
-        ...rest,
-        assetModels: assetModels.length,
-        licenses: licenses.length,
-      };
-    });
+    const res = await Promise.all(
+      manufacturers.map(async (manufacturer) => {
+        const { _id, ...rest } = manufacturer.toObject();
+        const assetModels = await this.assetModelModel.countDocuments({
+          manufacturer: { _id: _id },
+        });
+        const licenses = await this.licenseModel.countDocuments({
+          manufacturer: { _id: _id },
+          deletedAt: null,
+        });
+        return {
+          _id,
+          ...rest,
+          assetModels,
+          licenses,
+        };
+      }),
+    );
     return res;
   }
 

@@ -22,57 +22,54 @@ export class DigitalContentService {
   ) {}
 
   async getAllDigitalContents() {
-    const digitalContents = await this.digitalContentModel.find();
+    const digitalContents = await this.digitalContentModel.find({
+      deletedAt: null,
+    });
     const res = digitalContents.map((digitalContent) =>
       digitalContent.toObject(),
     );
     return res;
-    // return digitalContents;
   }
 
   async getDigitalContentById(id: string) {
-    const digitalContent = await this.digitalContentModel.findById(id);
+    const digitalContent = await this.digitalContentModel.findOne({
+      _id: id,
+      deletedAt: null,
+    });
     return digitalContent.toObject();
   }
 
   async getDigitalContentToSourceCode(
     digitalContentToSourceCodeDto?: DigitalContentToSourceCodeQueryDto,
   ): Promise<any> {
-    // const sourceCodeToUsers = await this.digitalContentToSourceCodeRepo.find({
-    //   relations: {
-    //     sourceCode: true,
-    //     digitalContent: true,
-    //   },
-    //   where: {
-    //     sourceCode: { id: digitalContentToSourceCodeDto.sourceCodeId },
-    //     digitalContent: { id: digitalContentToSourceCodeDto.digitalContentId },
-    //   },
-    //   withDeleted: digitalContentToSourceCodeDto.withDeleted,
-    // });
-    const sourceCodeToUsers = await this.digitalContentToSourceCodeModel
-      .find({
-        ...(digitalContentToSourceCodeDto.sourceCodeId && {
-          sourceCode: { _id: digitalContentToSourceCodeDto.sourceCodeId },
-        }),
-        ...(digitalContentToSourceCodeDto.digitalContentId && {
-          digitalContent: {
-            _id: digitalContentToSourceCodeDto.digitalContentId,
-          },
-        }),
-      })
-      .populate('sourceCode')
-      .populate('digitalContent');
-    const res = sourceCodeToUsers.map((sourceCodeToUser) => {
-      const { sourceCode, digitalContent, ...rest } =
-        sourceCodeToUser.toObject();
-      return {
-        ...rest,
-        sourceCodeId: sourceCode?._id,
-        sourceCodeName: sourceCode?.name,
-        digitalContentId: digitalContent?._id,
-        digitalContentName: digitalContent?.name,
-      };
-    });
+    // Find withDeleted = true
+    const digitalContentToSourceCodes =
+      await this.digitalContentToSourceCodeModel
+        .find({
+          ...(digitalContentToSourceCodeDto.sourceCodeId && {
+            sourceCode: { _id: digitalContentToSourceCodeDto.sourceCodeId },
+          }),
+          ...(digitalContentToSourceCodeDto.digitalContentId && {
+            digitalContent: {
+              _id: digitalContentToSourceCodeDto.digitalContentId,
+            },
+          }),
+        })
+        .populate('sourceCode')
+        .populate('digitalContent');
+    const res = digitalContentToSourceCodes.map(
+      (digitalContentToSourceCode) => {
+        const { sourceCode, digitalContent, ...rest } =
+          digitalContentToSourceCode.toObject();
+        return {
+          ...rest,
+          sourceCodeId: sourceCode?._id,
+          sourceCodeName: sourceCode?.name,
+          digitalContentId: digitalContent?._id,
+          digitalContentName: digitalContent?.name,
+        };
+      },
+    );
     return res;
   }
 
@@ -82,24 +79,22 @@ export class DigitalContentService {
   }
 
   async updateDigitalContent(id: string, digitalContentDto: DigitalContentDto) {
-    // let toUpdate = await this.digitalContentRepo.findOneBy({ id });
-
-    // let updated = Object.assign(toUpdate, digitalContentDto);
-    // return await this.digitalContentRepo.save(updated);
-    const updated = await this.digitalContentModel.findByIdAndUpdate(
-      id,
+    const updated = await this.digitalContentModel.findOneAndUpdate(
+      { _id: id, deletedAt: null },
       digitalContentDto,
     );
     return updated;
   }
 
   async deleteDigitalContent(id: string) {
-    // const toRemove = await this.digitalContentRepo.findOneOrFail({
-    //   where: { id },
-    //   relations: { digitalContentToSourceCodes: true },
-    // });
-    // return await this.digitalContentRepo.softRemove(toRemove);
-    return await this.digitalContentModel.findByIdAndDelete(id);
+    const toRemove = await this.digitalContentModel
+      .findById(id)
+      .populate('digitalContentToSourceCodes');
+    if (toRemove) {
+      toRemove.deletedAt = new Date(Date.now());
+      await toRemove.save();
+    }
+    return toRemove;
   }
 
   /*------------------------ checkin/checkout sourceCode ------------------------- */
@@ -109,8 +104,6 @@ export class DigitalContentService {
   ) {
     if (
       await this.digitalContentToSourceCodeModel.findOne({
-        // 'digitalContent._id': checkoutDigitalContentDto.digitalContentId,
-        // 'sourceCode._id': checkoutDigitalContentDto.sourceCodeId,
         digitalContent: { _id: checkoutDigitalContentDto.digitalContentId },
         sourceCode: { _id: checkoutDigitalContentDto.sourceCodeId },
       })
@@ -119,9 +112,10 @@ export class DigitalContentService {
         'This source code is already checkout',
         HttpStatus.BAD_REQUEST,
       );
-    const digitalContent = await this.digitalContentModel.findById(
-      checkoutDigitalContentDto.digitalContentId,
-    );
+    const digitalContent = await this.digitalContentModel.findOne({
+      _id: checkoutDigitalContentDto.digitalContentId,
+      deletedAt: null,
+    });
     const sourceCode = await this.sourceCodeService.getSourceCodeById(
       checkoutDigitalContentDto.sourceCodeId,
     );
@@ -141,18 +135,16 @@ export class DigitalContentService {
     checkinDigitalContentDto: CheckinDigitalContentDto,
   ) {
     const digitalContentToSourceCode =
-      await this.digitalContentToSourceCodeModel.findById(
-        checkinDigitalContentDto.digitalContentToSourceCodeId,
-      );
+      await this.digitalContentToSourceCodeModel.findOne({
+        _id: checkinDigitalContentDto.digitalContentToSourceCodeId,
+        deletedAt: null,
+      });
     digitalContentToSourceCode.checkin_date =
       checkinDigitalContentDto.checkin_date;
     digitalContentToSourceCode.checkin_note =
       checkinDigitalContentDto.checkin_note;
+    digitalContentToSourceCode.deletedAt = new Date(Date.now());
     await digitalContentToSourceCode.save();
-    // Soft delete
-    // await this.digitalContentToSourceCodeRepo.softDelete({
-    //   id: checkinDigitalContentDto.digitalContentToSourceCodeId,
-    // });
     return digitalContentToSourceCode;
   }
 }

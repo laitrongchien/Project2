@@ -22,16 +22,18 @@ export class SourceCodeService {
   ) {}
 
   async getAllSourceCodes() {
-    const sourceCodes = await this.sourceCodeModel.find();
+    const sourceCodes = await this.sourceCodeModel.find({ deletedAt: null });
     const res = sourceCodes.map((sourceCode) => {
       return sourceCode.toObject();
     });
     return res;
-    // return sourceCodes;
   }
 
   async getSourceCodeById(id: string) {
-    const sourceCode = await this.sourceCodeModel.findById(id);
+    const sourceCode = await this.sourceCodeModel.findOne({
+      _id: id,
+      deletedAt: null,
+    });
     return sourceCode.toObject();
   }
 
@@ -69,15 +71,23 @@ export class SourceCodeService {
   }
 
   async updateSourceCode(id: string, sourceCodeDto: SourceCodeDto) {
-    const updated = await this.sourceCodeModel.findByIdAndUpdate(
-      id,
+    const updated = await this.sourceCodeModel.findOneAndUpdate(
+      { _id: id, deletedAt: null },
       sourceCodeDto,
     );
     return updated;
   }
 
   async deleteSourceCode(id: string) {
-    return await this.sourceCodeModel.findByIdAndDelete(id);
+    const toRemove = await this.sourceCodeModel.findOne({
+      _id: id,
+      deletedAt: null,
+    });
+    if (toRemove) {
+      toRemove.deletedAt = new Date(Date.now());
+      await toRemove.save();
+    }
+    return toRemove;
   }
 
   /*------------------------ checkin/checkout sourceCode ------------------------- */
@@ -85,8 +95,6 @@ export class SourceCodeService {
   async checkoutSourceCode(checkoutSourceCodeDto: CheckoutSourceCodeDto) {
     if (
       await this.sourceCodeToUserModel.findOne({
-        // 'sourceCode._id': checkoutSourceCodeDto.sourceCodeId,
-        // 'user._id': checkoutSourceCodeDto.userId,
         sourceCode: { _id: checkoutSourceCodeDto.sourceCodeId },
         user: { _id: checkoutSourceCodeDto.userId },
       })
@@ -95,9 +103,10 @@ export class SourceCodeService {
         'This user is already checkout',
         HttpStatus.BAD_REQUEST,
       );
-    const sourceCode = await this.sourceCodeModel.findById(
-      checkoutSourceCodeDto.sourceCodeId,
-    );
+    const sourceCode = await this.sourceCodeModel.findOne({
+      _id: checkoutSourceCodeDto.sourceCodeId,
+      deletedAt: null,
+    });
     const user = await this.userService.getUserById(
       checkoutSourceCodeDto.userId,
     );
@@ -111,15 +120,14 @@ export class SourceCodeService {
   }
 
   async checkinSourceCode(checkinSourceCodeDto: CheckinSourceCodeDto) {
-    const sourceCodeToUser = await this.sourceCodeToUserModel.findById(
-      checkinSourceCodeDto.sourceCodeToUserId,
-    );
+    const sourceCodeToUser = await this.sourceCodeToUserModel.findOne({
+      _id: checkinSourceCodeDto.sourceCodeToUserId,
+      deletedAt: null,
+    });
     sourceCodeToUser.end_date = checkinSourceCodeDto.end_date;
     sourceCodeToUser.end_note = checkinSourceCodeDto.end_note;
+    sourceCodeToUser.deletedAt = new Date(Date.now());
     await sourceCodeToUser.save();
-    // await this.sourceCodeToUserRepo.softDelete({
-    //   id: checkinSourceCodeDto.sourceCodeToUserId,
-    // });
     return sourceCodeToUser;
   }
 }

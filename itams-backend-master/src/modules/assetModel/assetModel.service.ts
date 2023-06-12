@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AssetModel } from '../../models/schemas/assetModel.schema';
+import { Asset } from '../../models/schemas/asset.schema';
 import { CategoryService } from '../category/category.service';
 import { FirebaseService } from '../firebase/firebase.service';
 import { ManufacturerService } from '../manufacturer/manufacturer.service';
@@ -16,6 +17,8 @@ export class AssetModelService {
   constructor(
     @InjectModel(AssetModel.name)
     private readonly assetModelModel: Model<AssetModel>,
+    @InjectModel(Asset.name)
+    private readonly assetModel: Model<Asset>,
     private categoryService: CategoryService,
     private manufacturerService: ManufacturerService,
     private firebaseService: FirebaseService,
@@ -34,15 +37,22 @@ export class AssetModelService {
       .populate('assets')
       .populate('category')
       .populate('manufacturer');
-    const res = assetModels.map((assetModel) => {
-      const { assets, category, manufacturer, ...rest } = assetModel.toObject();
-      return {
-        ...rest,
-        numOfAssets: assets.length,
-        category: category?.name,
-        manufacturer: manufacturer?.name,
-      };
-    });
+    const res = await Promise.all(
+      assetModels.map(async (assetModel) => {
+        const { _id, category, manufacturer, ...rest } = assetModel.toObject();
+        const numOfAssets = await this.assetModel.countDocuments({
+          assetModel: { _id: _id },
+          deletedAt: null,
+        });
+        return {
+          _id,
+          ...rest,
+          numOfAssets,
+          category: category?.name,
+          manufacturer: manufacturer?.name,
+        };
+      }),
+    );
     return res;
   }
 

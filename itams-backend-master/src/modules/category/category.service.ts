@@ -2,6 +2,8 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Category } from '../../models/schemas/category.schema';
+import { AssetModel } from '../../models/schemas/assetModel.schema';
+import { License } from '../../models/schemas/license.schema';
 import { IMAGE_PATH } from './category.constants';
 import { CategoryDto } from './dtos/category.dto';
 import { FirebaseService } from '../firebase/firebase.service';
@@ -13,25 +15,36 @@ export class CategoryService {
   constructor(
     @InjectModel(Category.name)
     private categoryModel: Model<Category>,
+    @InjectModel(AssetModel.name)
+    private readonly assetModelModel: Model<AssetModel>,
+    @InjectModel(License.name)
+    private readonly licenseModel: Model<License>,
     private firebaseService: FirebaseService,
   ) {}
 
   async getAllCategories(): Promise<any> {
-    // const categories = await this.categoryRepo.find({
-    //   relations: { assetModels: true, licenses: true },
-    // });
     const categories = await this.categoryModel
       .find()
       .populate('assetModels')
       .populate('licenses');
-    const res = categories.map((category) => {
-      const { assetModels, licenses, ...rest } = category.toObject();
-      return {
-        ...rest,
-        assetModels: assetModels.length,
-        licenses: licenses.length,
-      };
-    });
+    const res = await Promise.all(
+      categories.map(async (category) => {
+        const { _id, ...rest } = category.toObject();
+        const assetModels = await this.assetModelModel.countDocuments({
+          category: { _id: _id },
+        });
+        const licenses = await this.licenseModel.countDocuments({
+          category: { _id: _id },
+          deletedAt: null,
+        });
+        return {
+          _id,
+          ...rest,
+          assetModels,
+          licenses,
+        };
+      }),
+    );
     return res;
   }
 

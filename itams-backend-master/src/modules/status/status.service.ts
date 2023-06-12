@@ -8,6 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Status } from '../../models/schemas/status.schema';
+import { Asset } from '../../models/schemas/asset.schema';
 import { StatusDto } from './dtos/status.dto';
 
 @Injectable()
@@ -17,17 +18,26 @@ export class StatusService {
   constructor(
     @InjectModel(Status.name)
     private readonly statusModel: Model<Status>,
+    @InjectModel(Asset.name)
+    private readonly assetModel: Model<Asset>,
   ) {}
 
   async getAllStatuses(): Promise<any> {
     const statuses = await this.statusModel.find().populate('assets');
-    const res = statuses.map((status) => {
-      const { assets, ...rest } = status.toObject();
-      return {
-        ...rest,
-        numOfAssets: assets.length,
-      };
-    });
+    const res = await Promise.all(
+      statuses.map(async (status) => {
+        const { _id, ...rest } = status.toObject();
+        const numOfAssets = await this.assetModel.countDocuments({
+          deletedAt: null,
+          status: { _id: _id },
+        });
+        return {
+          _id,
+          ...rest,
+          numOfAssets,
+        };
+      }),
+    );
     return res;
   }
 

@@ -2,6 +2,8 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Supplier } from '../../models/schemas/supplier.schema';
+import { Asset } from '../../models/schemas/asset.schema';
+import { License } from '../../models/schemas/license.schema';
 import { SupplierDto } from './dtos/supplier.dto';
 
 @Injectable()
@@ -11,24 +13,36 @@ export class SupplierService {
   constructor(
     @InjectModel(Supplier.name)
     private readonly supplierModel: Model<Supplier>,
+    @InjectModel(Asset.name)
+    private readonly assetModel: Model<Asset>,
+    @InjectModel(License.name)
+    private readonly licenseModel: Model<License>,
   ) {}
 
   async getAllSuppliers(): Promise<any> {
-    // const suppliers = await this.supplierRepo.find({
-    //   relations: { assets: true, licenses: true },
-    // });
     const suppliers = await this.supplierModel
       .find()
       .populate('assets')
       .populate('licenses');
-    const res = suppliers.map((supplier) => {
-      const { assets, licenses, ...rest } = supplier.toObject();
-      return {
-        ...rest,
-        assets: assets?.length ?? 0,
-        licenses: licenses?.length ?? 0,
-      };
-    });
+    const res = await Promise.all(
+      suppliers.map(async (supplier) => {
+        const { _id, ...rest } = supplier.toObject();
+        const assets = await this.assetModel.countDocuments({
+          deletedAt: null,
+          supplier: { _id: _id },
+        });
+        const licenses = await this.licenseModel.countDocuments({
+          deletedAt: null,
+          supplier: { _id: _id },
+        });
+        return {
+          _id,
+          ...rest,
+          assets,
+          licenses,
+        };
+      }),
+    );
     return res;
   }
 

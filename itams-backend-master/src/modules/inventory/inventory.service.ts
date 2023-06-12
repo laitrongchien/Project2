@@ -25,9 +25,6 @@ export class InventoryService {
   ) {}
 
   async getAllInventories(): Promise<any> {
-    // const inventories = await this.inventoryRepo.find({
-    //   relations: { department: true, assetToInventories: true },
-    // });
     const inventories = await this.inventoryModel.find();
     const res = inventories.map((inventory) => {
       const { department, assetToInventories, ...rest } = inventory.toObject();

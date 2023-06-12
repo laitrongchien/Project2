@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -10,9 +10,8 @@ import UpdateProfileDto from './dtos/update-profile.dto';
 import { AVATAR_PATH } from './user.constants';
 import { DepartmentService } from '../department/department.service';
 import { FirebaseService } from '../firebase/firebase.service';
-import { User } from 'src/models/schemas/user.schema';
-import { log } from 'console';
-
+import { User } from '../../models/schemas/user.schema';
+import { AssetToUser } from '../../models/schemas/assetToUser.schema';
 @Injectable()
 export class UsersService {
   private logger = new Logger(UsersService.name);
@@ -20,6 +19,8 @@ export class UsersService {
   constructor(
     @InjectModel(User.name)
     private readonly userModel: Model<User>,
+    @InjectModel(AssetToUser.name)
+    private readonly assetToUserModel: Model<AssetToUser>,
     private departmentService: DepartmentService,
     private firebaseService: FirebaseService,
   ) {}
@@ -27,28 +28,38 @@ export class UsersService {
   async getAll(userQuery?: UserQueryDto): Promise<any> {
     const users = await this.userModel
       .find({
+        deletedAt: null,
         ...(userQuery.departmentId && {
           department: { _id: userQuery.departmentId },
         }),
       })
       .populate('department')
       .populate('assetToUsers');
-    const res = users.map((user) => {
-      const { _id, department, assetToUsers, password, ...rest } =
-        user.toObject();
-      // console.log(user);
-      return {
-        _id: _id.toString(),
-        ...rest,
-        department: department?.name,
-        assets: assetToUsers?.length,
-      };
-    });
+    const res = await Promise.all(
+      users.map(async (user) => {
+        const { _id, department, password, ...rest } = user.toObject();
+        const assets = await this.assetToUserModel.countDocuments({
+          deletedAt: null,
+          user: { _id: _id },
+        });
+        return {
+          _id: _id.toString(),
+          ...rest,
+          department: department?.name,
+          assets,
+        };
+      }),
+    );
     return res;
   }
 
   async getUserByUserId(id: string): Promise<any> {
-    const user = await this.userModel.findById(id).populate('department');
+    const user = await this.userModel
+      .findOne({
+        _id: id,
+        deletedAt: null,
+      })
+      .populate('department');
     const { _id, department, password, ...rest } = user.toObject();
     return { _id: _id.toString(), department: department?.name, ...rest };
   }
@@ -57,10 +68,6 @@ export class UsersService {
     const department = await this.departmentService.getDepartmentById(
       userDto.departmentId,
     );
-
-    // console.log(department);
-    // Update code
-
     const userData = {
       name: userDto.name,
       username: userDto.username,
@@ -104,7 +111,10 @@ export class UsersService {
   }
 
   async updateUser(id: string, userDto: UserDto) {
-    const toUpdate = await this.userModel.findById(id);
+    const toUpdate = await this.userModel.findOne({
+      _id: id,
+      deletedAt: null,
+    });
     const { password, departmentId, ...rest } = userDto;
     const department = await this.departmentService.getDepartmentById(
       userDto.departmentId,
@@ -116,20 +126,23 @@ export class UsersService {
   }
 
   async deleteUser(id: string) {
-    // const toRemove = await this.userRepo.findOneOrFail({
-    //   where: { id },
-    //   relations: {
-    //     assetToUsers: true,
-    //     sourceCodeToUsers: true,
-    //     requestAssets: true,
-    //   },
-    // });
-    // return await this.userRepo.softRemove(toRemove);
-    return this.userModel.findByIdAndDelete(id);
+    const toRemove = await this.userModel
+      .findOne({
+        _id: id,
+        deletedAt: null,
+      })
+      .populate('assetToUsers')
+      .populate('sourceCodeToUsers')
+      .populate('requestAssets');
+    if (toRemove) {
+      toRemove.deletedAt = new Date(Date.now());
+      await toRemove.save();
+    }
+    return toRemove;
   }
 
   async getUserByUsername(username: string) {
-    const user = await this.userModel.findOne({ username });
+    const user = await this.userModel.findOne({ username, deletedAt: null });
 
     if (user) {
       return user.toObject();
@@ -137,7 +150,10 @@ export class UsersService {
   }
 
   async getUserById(id: string) {
-    const user = await this.userModel.findById(id);
+    const user = await this.userModel.findOne({
+      _id: id,
+      deletedAt: null,
+    });
     return user.toObject();
   }
 

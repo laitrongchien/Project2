@@ -24,7 +24,6 @@ import { LicenseDto } from './dtos/license.dto';
 import { LicenseQueryDto } from './dtos/licenseQuery.dto';
 import { CheckoutLicenseDto } from './dtos/checkoutLicense.dto';
 import { CheckinLicenseDto } from './dtos/checkinLicense.dto';
-// import { LicenseToAssetRepository } from 'src/models/repositories/licenseToAsset.repository';
 import { LicenseToAssetQueryDto } from './dtos/licenseToAsset.dto';
 
 @Injectable()
@@ -47,6 +46,7 @@ export class LicenseService {
   async getAll(licenseQuery?: LicenseQueryDto): Promise<any> {
     const licenses = await this.licenseModel
       .find({
+        deletedAt: null,
         ...(licenseQuery.categoryId && {
           category: { _id: licenseQuery.categoryId },
         }),
@@ -61,51 +61,56 @@ export class LicenseService {
       .populate('manufacturer')
       .populate('supplier')
       .populate('licenseToAssets');
-    const res = licenses.map((license) => {
-      const { category, manufacturer, supplier, licenseToAssets, ...rest } =
-        license.toObject();
-      return {
-        ...rest,
-        category: license?.category?.name,
-        manufacturer: license?.manufacturer?.name,
-        supplier: license?.supplier?.name,
-        available: license.seats - licenseToAssets?.length,
-      };
-    });
+    const res = await Promise.all(
+      licenses.map(async (license) => {
+        const { _id, category, manufacturer, supplier, ...rest } =
+          license.toObject();
+        const licenseToAssets = await this.licenseToAssetModel.countDocuments({
+          license: { _id: _id },
+          deletedAt: null,
+        });
+        return {
+          _id,
+          ...rest,
+          category: license?.category?.name,
+          manufacturer: license?.manufacturer?.name,
+          supplier: license?.supplier?.name,
+          available: license.seats - licenseToAssets,
+        };
+      }),
+    );
     return res;
   }
 
   async getLicenseByLicenseId(id: string): Promise<any> {
     const license = await this.licenseModel
-      .findById(id)
+      .findOne({
+        _id: id,
+        deletedAt: null,
+      })
       .populate('category')
       .populate('supplier')
       .populate('manufacturer')
       .populate('licenseToAssets');
-    const { category, manufacturer, supplier, licenseToAssets, ...rest } =
+    const { _id, category, manufacturer, supplier, ...rest } =
       license.toObject();
+    const licenseToAssets = await this.licenseToAssetModel.countDocuments({
+      license: { _id: _id },
+      deletedAt: null,
+    });
     return {
+      _id,
       ...rest,
       category: license?.category?.name,
       manufacturer: license?.manufacturer?.name,
       supplier: license?.supplier?.name,
-      available: license.seats - licenseToAssets?.length,
+      available: license.seats - licenseToAssets,
     };
   }
 
   async getLicenseToAsset(
     licenseToAssetQueryDto?: LicenseToAssetQueryDto,
   ): Promise<any> {
-    // const licenseToAssets = await this.licenseToAssetModel.find({
-    //   relations: {
-    //     asset: true,
-    //     license: true,
-    //   },
-    //   where: {
-    //     asset: { id: licenseToAssetQueryDto.assetId },
-    //     license: { id: licenseToAssetQueryDto.licenseId },
-    //   },
-    //   withDeleted: licenseToAssetQueryDto.withDeleted,
     const licenseToAssets = await this.licenseToAssetModel
       .find({
         ...(licenseToAssetQueryDto.assetId && {
@@ -158,7 +163,10 @@ export class LicenseService {
   }
 
   async updateLicense(id: string, licenseDto: LicenseDto) {
-    const toUpdate = await this.licenseModel.findById(id);
+    const toUpdate = await this.licenseModel.findOne({
+      _id: id,
+      deletedAt: null,
+    });
     const { categoryId, manufacturerId, supplierId, ...rest } = licenseDto;
     const category = await this.categoryService.getCategoryById(
       licenseDto.categoryId,
@@ -183,15 +191,24 @@ export class LicenseService {
       NotificationType.LICENSE,
       id,
     );
-    // const toRemove = await this.licenseRepo.findOneOrFail({
-    //   where: { id },
-    //   relations: { licenseToAssets: true },
-    // });
-    // return await this.licenseRepo.softRemove(toRemove);
+    const toRemove = await this.licenseModel
+      .findOne({
+        _id: id,
+        deletedAt: null,
+      })
+      .populate('licenseToAssets');
+    if (toRemove) {
+      toRemove.deletedAt = new Date(Date.now());
+      await toRemove.save();
+    }
+    return toRemove;
   }
 
   async getLicenseById(id: string) {
-    const license: License = await this.licenseModel.findById(id);
+    const license: License = await this.licenseModel.findById({
+      _id: id,
+      deletedAt: null,
+    });
     return license;
   }
 
@@ -199,14 +216,19 @@ export class LicenseService {
 
   async checkoutLicense(checkoutLicenseDto: CheckoutLicenseDto) {
     const license = await this.licenseModel
-      .findById(checkoutLicenseDto.licenseId)
+      .findOne({
+        _id: checkoutLicenseDto.licenseId,
+        deletedAt: null,
+      })
       .populate('licenseToAssets');
-    if (license.licenseToAssets.length >= license.seats)
+    const licenseToAssets = await this.licenseToAssetModel.countDocuments({
+      license: { _id: license._id },
+      deletedAt: null,
+    });
+    if (licenseToAssets >= license.seats)
       throw new HttpException('This license is full', HttpStatus.BAD_REQUEST);
     if (
       await this.licenseToAssetModel.findOne({
-        // 'asset._id': checkoutLicenseDto.assetId,
-        // 'license._id': checkoutLicenseDto.licenseId,
         asset: { _id: checkoutLicenseDto.assetId },
         license: { _id: checkoutLicenseDto.licenseId },
       })
@@ -228,16 +250,14 @@ export class LicenseService {
   }
 
   async checkinLicense(checkinLicenseDto: CheckinLicenseDto) {
-    const licenseToAsset = await this.licenseToAssetModel.findById(
-      checkinLicenseDto.licenseToAssetId,
-    );
+    const licenseToAsset = await this.licenseToAssetModel.findOne({
+      _id: checkinLicenseDto.licenseToAssetId,
+      deletedAt: null,
+    });
     licenseToAsset.checkin_date = checkinLicenseDto.checkin_date;
     licenseToAsset.checkin_note = checkinLicenseDto.checkin_note;
+    licenseToAsset.deletedAt = new Date(Date.now());
     await licenseToAsset.save();
-    // await this.licenseToAssetRepo.softDelete({
-    //   id: checkinLicenseDto.licenseToAssetId,
-    // });
-    // Implement soft delete
     return licenseToAsset;
   }
 
@@ -246,7 +266,9 @@ export class LicenseService {
   // At 00:00 everyday
   @Cron('0 0 * * *')
   async handleCronLicenseExpiration() {
-    const licenses: License[] = await this.licenseModel.find();
+    const licenses: License[] = await this.licenseModel.find({
+      deletedAt: null,
+    });
     await Promise.all(
       licenses.map(async (license: License) => {
         const expiration_date = license.expiration_date;

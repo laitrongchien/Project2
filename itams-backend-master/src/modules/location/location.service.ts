@@ -2,7 +2,9 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Location } from '../../models/schemas/location.schema';
+import { Department } from '../../models/schemas/department.schema';
 import { LocationDto } from './dtos/location';
+// import { DepartmentService } from '../department/department.service';
 
 @Injectable()
 export class LocationService {
@@ -11,17 +13,25 @@ export class LocationService {
   constructor(
     @InjectModel(Location.name)
     private readonly locationModel: Model<Location>,
+    @InjectModel(Department.name)
+    private readonly departmentModel: Model<Department>,
   ) {}
 
   async getAllLocations(): Promise<any> {
     const locations = await this.locationModel.find();
-    const res = locations.map((location) => {
-      const { departments, ...rest } = location.toObject();
-      return {
-        ...rest,
-        numOfDepartments: departments?.length ?? 0,
-      };
-    });
+    const res = await Promise.all(
+      locations.map(async (location) => {
+        const { _id, ...rest } = location.toObject();
+        const numOfDepartments = await this.departmentModel.countDocuments({
+          location: { _id: _id },
+        });
+        return {
+          ...rest,
+          _id,
+          numOfDepartments,
+        };
+      }),
+    );
     return res;
   }
 

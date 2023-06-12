@@ -5,23 +5,26 @@ import { LocationService } from '../location/location.service';
 import { DepartmentDto } from './dtos/department.dto';
 import { DepartmentQueryDto } from './dtos/departmentQuery.dto';
 import { Department } from '../../models/schemas/department.schema';
+import { Asset } from '../../models/schemas/asset.schema';
+import { User } from '../../models/schemas/user.schema';
 
 @Injectable()
 export class DepartmentService {
   private logger = new Logger(DepartmentService.name);
 
   constructor(
-    // @InjectRepository(Department) private departmentRepo: DepartmentRepository,
     @InjectModel(Department.name)
     private readonly departmentModel: Model<Department>,
+    @InjectModel(Asset.name)
+    private readonly assetModel: Model<Asset>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<User>,
     private locationService: LocationService,
   ) {}
 
   async getAllDepartments(departmentQuery?: DepartmentQueryDto): Promise<any> {
-    // console.log(departmentQuery.locationId);
     const departments = await this.departmentModel
       .find({
-        // 'location._id': departmentQuery.locationId,
         ...(departmentQuery.locationId && {
           location: { _id: departmentQuery.locationId },
         }),
@@ -29,16 +32,34 @@ export class DepartmentService {
       .populate('assets')
       .populate('users')
       .populate('location');
-    const res = departments.map((department) => {
-      const { assets, users, location, ...rest } = department.toObject();
-      return {
-        ...rest,
-        assets: assets?.length ?? 0,
-        users: users?.length ?? 0,
-        location: location?.name ?? '',
-      };
-    });
+    const res = await Promise.all(
+      departments.map(async (department) => {
+        const { _id, location, ...rest } = department.toObject();
+        const assets = await this.assetModel.countDocuments({
+          department: { _id: _id },
+          deletedAt: null,
+        });
+        const users = await this.userModel.countDocuments({
+          department: { _id: _id },
+          deletedAt: null,
+        });
+        return {
+          _id,
+          ...rest,
+          assets,
+          users,
+          location: location?.name ?? '',
+        };
+      }),
+    );
     return res;
+  }
+
+  async countDepartments(id: string) {
+    const numOfDepartments = await this.departmentModel.countDocuments({
+      location: { _id: id },
+    });
+    return numOfDepartments;
   }
 
   async getDepartmentByDepartmentId(id: string): Promise<any> {
@@ -46,13 +67,11 @@ export class DepartmentService {
       .findById(id)
       .populate('location');
     const { location, ...rest } = department.toObject();
-    // console.log(department.toObject);
 
     return {
       ...rest,
       location: location?.name ?? '',
     };
-    // return department;
   }
 
   async getDepartmentById(id: string) {
