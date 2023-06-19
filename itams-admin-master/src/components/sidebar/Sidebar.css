@@ -1,0 +1,16 @@
+.sidebar-content::-webkit-scrollbar {
+  width: 6px; /* Width of the scrollbar */
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Color of the track */
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: #adadad; /* Color of the thumb */
+  border-radius: 4px; /* Border radius of the thumb */
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: #8a8989; /* Color of the thumb on hover */
+}

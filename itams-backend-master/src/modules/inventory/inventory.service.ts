@@ -26,23 +26,32 @@ export class InventoryService {
 
   async getAllInventories(): Promise<any> {
     const inventories = await this.inventoryModel.find();
-    const res = inventories.map((inventory) => {
-      const { department, assetToInventories, ...rest } = inventory.toObject();
-      return {
-        ...rest,
-        department: department.name,
-        assets: assetToInventories?.length ?? 0,
-        remaining: assetToInventories.filter(
-          (assetToInventory) => assetToInventory.check === false,
-        ).length,
-      };
-    });
+    const res = await Promise.all(
+      inventories.map(async (inventory) => {
+        const { _id, department, ...rest } = inventory.toObject();
+        const numOfAssets = await this.assetToInventoryModel.countDocuments({
+          inventory: { _id: _id },
+        });
+        const assetToInventories = await this.assetToInventoryModel.find({
+          inventory: { _id: _id },
+        });
+        return {
+          _id,
+          ...rest,
+          department: department.name,
+          assets: numOfAssets,
+          remaining: assetToInventories.filter(
+            (assetToInventory) => assetToInventory.check === false,
+          ).length,
+        };
+      }),
+    );
     return res;
   }
 
   async getInventoryById(id: string) {
     const inventory = await this.inventoryModel.findById(id);
-    return inventory;
+    return inventory.toObject();
   }
 
   async createInventory(inventoryDto: InventoryDto) {
@@ -88,16 +97,9 @@ export class InventoryService {
   }
 
   async getAssetToInventoryByInventoryId(id: string): Promise<any> {
-    // const assetToInventories: AssetToInventory[] =
-    //   await this.assetToInventoryRepo.find({
-    //     where: { inventory: { id } },
-    //     relations: { asset: true, old_status: true, new_status: true },
-    //     withDeleted: true,
-    //   });
     const assetToInventories: AssetToInventory[] =
       await this.assetToInventoryModel
         .find({
-          // 'inventory._id': id,
           inventory: { _id: id },
         })
         .populate('asset')

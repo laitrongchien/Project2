@@ -1,14 +1,14 @@
-import * as React from 'react';
-import Button from '@mui/material/Button';
-import ClickAwayListener from '@mui/material/ClickAwayListener';
-import Grow from '@mui/material/Grow';
-import Paper from '@mui/material/Paper';
-import Popper from '@mui/material/Popper';
-import MenuItem from '@mui/material/MenuItem';
-import MenuList from '@mui/material/MenuList';
-import { Box } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { MenuItem as MenuItemInterface } from '../../interface/interface';
+import * as React from "react";
+import Button from "@mui/material/Button";
+import ClickAwayListener from "@mui/material/ClickAwayListener";
+import Grow from "@mui/material/Grow";
+import Paper from "@mui/material/Paper";
+import Popper from "@mui/material/Popper";
+import MenuItem from "@mui/material/MenuItem";
+import MenuList from "@mui/material/MenuList";
+import { Box } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { MenuItem as MenuItemInterface } from "../../interface/interface";
 
 export default function MenuListComposition(props: any) {
   const { menuList, name } = props;
@@ -29,14 +29,24 @@ export default function MenuListComposition(props: any) {
       <Button
         ref={anchorRef}
         id="composition-button"
-        aria-controls={open ? 'composition-menu' : undefined}
-        aria-expanded={open ? 'true' : undefined}
+        aria-controls={open ? "composition-menu" : undefined}
+        aria-expanded={open ? "true" : undefined}
         aria-haspopup="true"
         sx={{
           my: 2,
-          color: 'white',
-          display: 'block',
-          textTransform: 'capitalize',
+          color: "white",
+          display: "block",
+          textTransform: "capitalize",
+          position: "relative",
+          "&:hover::after": {
+            content: '""',
+            position: "absolute",
+            bottom: "6px",
+            left: 0,
+            width: "100%",
+            height: "2px",
+            backgroundColor: "white",
+          },
         }}
       >
         {name}
@@ -53,7 +63,7 @@ export default function MenuListComposition(props: any) {
             {...TransitionProps}
             style={{
               transformOrigin:
-                placement === 'bottom-start' ? 'left top' : 'left bottom',
+                placement === "bottom-start" ? "left top" : "left bottom",
             }}
           >
             <Paper>

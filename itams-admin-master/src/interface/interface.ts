@@ -116,13 +116,13 @@ export interface Notification {
 }
 
 export enum NotificationType {
-  ASSET = 'Asset',
-  LICENSE = 'License',
+  ASSET = "Asset",
+  LICENSE = "License",
 }
 
 export enum CheckType {
-  CHECKIN = 'checkin',
-  CHECKOUT = 'checkout',
+  CHECKIN = "checkin",
+  CHECKOUT = "checkout",
 }
 
 export interface Asset {
@@ -455,14 +455,15 @@ export interface AcceptRequest {
 }
 
 export enum RequestAssetStatus {
-  REQUESTED = 'Requested',
-  REJECTED = 'Rejected',
-  ACCEPTED = 'Accepted',
+  REQUESTED = "Requested",
+  REJECTED = "Rejected",
+  ACCEPTED = "Accepted",
 }
 
 export interface MenuItem {
   name: string;
   destination: string;
+  menuList?: MenuItem[];
 }
 
 // export interface AssetModel {

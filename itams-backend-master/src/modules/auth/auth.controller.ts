@@ -19,6 +19,7 @@ import RequestWithAdmin from './interfaces/request-with-admin.interface';
 import ChangePasswordDto from './dtos/change-passord.dto';
 import { LocalAdminAuthGuard } from './guards/local-admin-auth.guard';
 import { JwtAdminAuthGuard } from './guards/jwt-admin-auth.guard';
+import { Document } from 'mongoose';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -30,15 +31,17 @@ export class AuthController {
   @UseInterceptors(ClassSerializerInterceptor)
   authenticate(@Request() request: RequestWithUser) {
     const user = request.user;
-    return user;
+    const userData = user.toObject();
+    return userData;
   }
 
   @UseGuards(JwtAdminAuthGuard)
   @Get('admin')
   @UseInterceptors(ClassSerializerInterceptor)
   authenticateAdmin(@Request() request: RequestWithAdmin) {
-    const admin = request.user;
-    return admin;
+    const admin = request.user as Document;
+    const { _id, ...rest } = admin.toObject();
+    return { _id: _id.toString(), ...rest };
   }
 
   @UseGuards(LocalAuthGuard)

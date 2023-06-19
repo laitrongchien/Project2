@@ -1,18 +1,18 @@
-import { Box } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import { Formik, Form } from 'formik';
-import { useState } from 'react';
-import InputField from '../../components/FormComponent/InputField';
-import { toast } from 'react-toastify';
-import { Actions, NewManufacturer } from '../../interface/interface';
-import { useNavigate } from 'react-router-dom';
+import { Box } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
+import { Formik, Form } from "formik";
+import { useState } from "react";
+import InputField from "../../components/FormComponent/InputField";
+import { toast } from "react-toastify";
+import { Actions, NewManufacturer } from "../../interface/interface";
+import { useNavigate } from "react-router-dom";
 import {
   createNewManufacturer,
   updateManufacturer,
   saveImage,
-} from '../../api/manufacturer';
-import { ImageListType } from 'react-images-uploading';
-import { UploadImage } from '../../components/FormComponent/UploadImage';
+} from "../../api/manufacturer";
+import { ImageListType } from "react-images-uploading";
+import { UploadImage } from "../../components/FormComponent/UploadImage";
 
 function CreateManufacturerForm(props: any) {
   const { data, action } = props;
@@ -23,24 +23,30 @@ function CreateManufacturerForm(props: any) {
     setImage(imageList);
   };
   const initialValues: NewManufacturer = {
-    name: data?.name ?? '',
+    name: data?.name ?? "",
   };
 
   const handleSubmit = async (newManufacturer: NewManufacturer) => {
     setLoading(true);
     try {
-      if (action === Actions.UPDATE)
+      if (action === Actions.UPDATE) {
         await updateManufacturer(data.id, newManufacturer);
-      else await createNewManufacturer(newManufacturer);
-      if (image.length > 0) await saveImage(data.id, image[0].file);
+        if (image.length > 0) await saveImage(data.id, image[0].file);
+      } else {
+        const createdManufacturer = await createNewManufacturer(
+          newManufacturer
+        );
+        if (image.length > 0)
+          await saveImage(createdManufacturer._id, image[0].file);
+      }
       navigate(-1);
       toast.success(
         action === Actions.UPDATE
-          ? 'Update successfully'
-          : 'Create successfully',
+          ? "Update successfully"
+          : "Create successfully"
       );
     } catch (err: any) {
-      console.log('Create asset', err);
+      console.log("Create asset", err);
       toast.error(err.response.data.message);
     }
     setLoading(false);
@@ -49,11 +55,11 @@ function CreateManufacturerForm(props: any) {
   return (
     <Box
       sx={{
-        width: { md: '1000px', xs: '100%' },
-        background: '#FFF',
-        borderRadius: '5px',
-        py: '32px',
-        margin: 'auto',
+        width: { md: "1000px", xs: "100%" },
+        background: "#FFF",
+        borderRadius: "5px",
+        py: "32px",
+        margin: "auto",
       }}
     >
       <Formik
@@ -64,7 +70,7 @@ function CreateManufacturerForm(props: any) {
         {(formik) => {
           return (
             <Form>
-              <Box sx={{ mx: '60px', mt: '20px' }}>
+              <Box sx={{ mx: "60px", mt: "20px" }}>
                 <InputField
                   id="name"
                   fieldName="Name"
@@ -76,25 +82,25 @@ function CreateManufacturerForm(props: any) {
               </Box>
               <Box
                 sx={{
-                  mx: '60px',
-                  mt: '20px',
-                  display: 'flex',
-                  justifyContent: 'right',
+                  mx: "60px",
+                  mt: "20px",
+                  display: "flex",
+                  justifyContent: "right",
                 }}
               >
                 <LoadingButton
                   loading={loading}
                   type="submit"
                   sx={{
-                    background: '#007aff',
-                    boxShadow: '0px 8px 25px rgba(114, 56, 207, 0.15)',
-                    borderRadius: '10px',
-                    textTransform: 'none',
-                    color: '#FFF',
+                    background: "#007aff",
+                    boxShadow: "0px 8px 25px rgba(114, 56, 207, 0.15)",
+                    borderRadius: "10px",
+                    textTransform: "none",
+                    color: "#FFF",
                     fontWeight: 700,
                     fontSize: 14,
-                    '&:hover': {
-                      background: '#005eff',
+                    "&:hover": {
+                      background: "#005eff",
                     },
                   }}
                 >

@@ -37,7 +37,15 @@ export class UsersService {
       .populate('assetToUsers');
     const res = await Promise.all(
       users.map(async (user) => {
-        const { _id, department, password, ...rest } = user.toObject();
+        const {
+          _id,
+          department,
+          password,
+          assetToUsers,
+          sourceCodeToUsers,
+          requestAssets,
+          ...rest
+        } = user.toObject();
         const assets = await this.assetToUserModel.countDocuments({
           deletedAt: null,
           user: { _id: _id },
@@ -83,13 +91,13 @@ export class UsersService {
     return user;
   }
 
-  async importUser(userDtos: UserDto[]) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
+  async importUser(userDtos: UserDto[]): Promise<any> {
+    // const session = await mongoose.startSession();
+    // session.startTransaction();
     try {
       await Promise.all(
         userDtos.map(async (userDto: UserDto) => {
-          const user = new User();
+          const user = new this.userModel();
           const { password, departmentId, ...rest } = userDto;
           Object.assign(user, rest);
           const department = await this.departmentService.getDepartmentById(
@@ -97,16 +105,20 @@ export class UsersService {
           );
           user.password = await bcrypt.hash(userDto.password, 10);
           user.department = department;
-          await user.save({ session });
+          // console.log(user);
+          await user.save();
         }),
       );
-      await session.commitTransaction();
+      // await session.commitTransaction();
+      console.log('Imported sucessfully');
     } catch (err) {
-      await session.abortTransaction();
-      throw err;
-    } finally {
-      session.endSession();
+      // await session.abortTransaction();
+      console.log(err);
+      // throw err;
     }
+    // finally {
+    //   session.endSession();
+    // }
     return userDtos;
   }
 

@@ -1,26 +1,26 @@
-import { Box } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import { Formik, Form } from 'formik';
-import { useState, useEffect } from 'react';
-import InputField from '../../components/FormComponent/InputField';
-import { toast } from 'react-toastify';
+import { Box } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
+import { Formik, Form } from "formik";
+import { useState, useEffect } from "react";
+import InputField from "../../components/FormComponent/InputField";
+import { toast } from "react-toastify";
 import {
   Actions,
   NewAssetModel,
   Category,
   Manufacturer,
-} from '../../interface/interface';
-import SelectField from '../../components/FormComponent/SelectField';
-import { useNavigate } from 'react-router-dom';
-import { getAllCategories } from '../../api/category';
-import { getAllManufacturers } from '../../api/manufacturer';
+} from "../../interface/interface";
+import SelectField from "../../components/FormComponent/SelectField";
+import { useNavigate } from "react-router-dom";
+import { getAllCategories } from "../../api/category";
+import { getAllManufacturers } from "../../api/manufacturer";
 import {
   createNewAssetModel,
   updateAssetModel,
   saveImage,
-} from '../../api/assetModel';
-import { ImageListType } from 'react-images-uploading';
-import { UploadImage } from '../../components/FormComponent/UploadImage';
+} from "../../api/assetModel";
+import { ImageListType } from "react-images-uploading";
+import { UploadImage } from "../../components/FormComponent/UploadImage";
 
 function CreateAssetModelForm(props: any) {
   const { data, action } = props;
@@ -33,15 +33,15 @@ function CreateAssetModelForm(props: any) {
     setImage(imageList);
   };
   const initialValues: NewAssetModel = {
-    name: data?.name ?? '',
+    name: data?.name ?? "",
     categoryId:
       categories.find((category: Category) => {
         return category.name === data?.category;
-      })?.id ?? '',
+      })?.id ?? "",
     manufacturerId:
       manufacturers.find((manufacturer: Manufacturer) => {
         return manufacturer.name === data?.manufacturer;
-      })?.id ?? '',
+      })?.id ?? "",
   };
   useEffect(() => {
     const getData = async () => {
@@ -60,18 +60,22 @@ function CreateAssetModelForm(props: any) {
   const handleSubmit = async (newAssetModel: NewAssetModel) => {
     setLoading(true);
     try {
-      if (action === Actions.UPDATE)
+      if (action === Actions.UPDATE) {
         await updateAssetModel(data.id, newAssetModel);
-      else await createNewAssetModel(newAssetModel);
-      if (image.length > 0) await saveImage(data.id, image[0].file);
+        if (image.length > 0) await saveImage(data.id, image[0].file);
+      } else {
+        const createdAssetModel = await createNewAssetModel(newAssetModel);
+        if (image.length > 0)
+          await saveImage(createdAssetModel._id, image[0].file);
+      }
       navigate(-1);
       toast.success(
         action === Actions.UPDATE
-          ? 'Update successfully'
-          : 'Create successfully',
+          ? "Update successfully"
+          : "Create successfully"
       );
     } catch (err: any) {
-      console.log('Create asset', err);
+      console.log("Create asset", err);
       toast.error(err.response.data.message);
     }
     setLoading(false);
@@ -80,11 +84,11 @@ function CreateAssetModelForm(props: any) {
   return (
     <Box
       sx={{
-        width: { md: '1000px', xs: '100%' },
-        background: '#FFF',
-        borderRadius: '5px',
-        py: '32px',
-        margin: 'auto',
+        width: { md: "1000px", xs: "100%" },
+        background: "#FFF",
+        borderRadius: "5px",
+        py: "32px",
+        margin: "auto",
       }}
     >
       <Formik
@@ -95,7 +99,7 @@ function CreateAssetModelForm(props: any) {
         {(formik) => {
           return (
             <Form>
-              <Box sx={{ mx: '60px', mt: '20px' }}>
+              <Box sx={{ mx: "60px", mt: "20px" }}>
                 <InputField
                   id="name"
                   fieldName="Name"
@@ -121,25 +125,25 @@ function CreateAssetModelForm(props: any) {
               </Box>
               <Box
                 sx={{
-                  mx: '60px',
-                  mt: '20px',
-                  display: 'flex',
-                  justifyContent: 'right',
+                  mx: "60px",
+                  mt: "20px",
+                  display: "flex",
+                  justifyContent: "right",
                 }}
               >
                 <LoadingButton
                   loading={loading}
                   type="submit"
                   sx={{
-                    background: '#007aff',
-                    boxShadow: '0px 8px 25px rgba(114, 56, 207, 0.15)',
-                    borderRadius: '10px',
-                    textTransform: 'none',
-                    color: '#FFF',
+                    background: "#007aff",
+                    boxShadow: "0px 8px 25px rgba(114, 56, 207, 0.15)",
+                    borderRadius: "10px",
+                    textTransform: "none",
+                    color: "#FFF",
                     fontWeight: 700,
                     fontSize: 14,
-                    '&:hover': {
-                      background: '#005eff',
+                    "&:hover": {
+                      background: "#005eff",
                     },
                   }}
                 >

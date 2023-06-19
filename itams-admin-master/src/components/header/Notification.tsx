@@ -48,7 +48,7 @@ const Notification = () => {
         sx={{ p: 0 }}
       >
         <Badge badgeContent={notifications?.length ?? 0} color="error">
-          <NotificationsIcon />
+          <NotificationsIcon sx={{ color: "#918f8f" }} />
         </Badge>
       </IconButton>
       <Menu

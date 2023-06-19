@@ -8,7 +8,6 @@ import {
   Actions,
   NewInventory,
   Department,
-  Supplier,
 } from '../../interface/interface';
 import SelectField from '../../components/FormComponent/SelectField';
 import { useNavigate } from 'react-router-dom';

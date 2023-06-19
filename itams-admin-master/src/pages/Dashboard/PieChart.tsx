@@ -1,37 +1,43 @@
-import * as React from 'react';
-import Paper from '@mui/material/Paper';
+import * as React from "react";
+import Paper from "@mui/material/Paper";
 import {
   Chart,
   PieSeries,
   Title,
   Legend,
-} from '@devexpress/dx-react-chart-material-ui';
-import { Animation } from '@devexpress/dx-react-chart';
+  Tooltip,
+} from "@devexpress/dx-react-chart-material-ui";
+import { Animation } from "@devexpress/dx-react-chart";
 
 const Root = (props: any) => (
   <Legend.Root
     {...props}
     sx={{
-      display: 'flex',
-      margin: 'auto',
-      flexDirection: 'row',
-      flexWrap: 'wrap',
+      display: "flex",
+      margin: "auto",
+      flexDirection: "row",
+      flexWrap: "wrap",
     }}
   />
 );
 const Item = (props: any) => (
-  <Legend.Item sx={{ maxWidth: '120px' }} {...props} />
+  <Legend.Item sx={{ maxWidth: "120px" }} {...props} />
 );
 const Label = (props: any) => (
-  <Legend.Label {...props} sx={{ whiteSpace: 'wrap' }} />
+  <Legend.Label {...props} sx={{ whiteSpace: "wrap" }} />
 );
 
 export default function PieChart(props: any) {
   const { data } = props;
+
   return (
-    <Paper sx={{ minWidth: { md: '35vw' } }}>
+    <Paper sx={{ minWidth: { md: "35vw" } }}>
       <Chart data={data}>
-        <PieSeries valueField="area" argumentField="country" />
+        <PieSeries
+          valueField="area"
+          argumentField="country"
+          innerRadius={0.6}
+        />
         <Title text="Assets By Status" />
         <Legend
           position="bottom"
@@ -39,6 +45,7 @@ export default function PieChart(props: any) {
           itemComponent={Item}
           labelComponent={Label}
         />
+        <Tooltip />
         <Animation />
       </Chart>
     </Paper>

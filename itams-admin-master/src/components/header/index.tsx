@@ -1,79 +1,29 @@
-import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
-import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
-import { useNavigate } from 'react-router-dom';
-import { logout } from '../../api/auth';
-import { useAuthContext } from '../../context/AuthContext';
-import { toast } from 'react-toastify';
-import MenuListComposition from '../MenuList/MenuListComposition';
-import { MenuItem as MenuItemInterface } from '../../interface/interface';
-import Notification from './Notification';
-import NestedList from '../MenuList/NestedList';
-interface Page {
-  name: string;
-  hasChild: boolean;
-  destination?: string;
-  menuList?: MenuItemInterface[];
-}
-const pages: Page[] = [
-  { name: 'Dashboard', destination: '/', hasChild: false },
-  {
-    name: 'Assets',
-    destination: '/hardware',
-    hasChild: true,
-    menuList: [
-      { name: 'List All', destination: '/hardware' },
-      { name: 'All Requests', destination: 'request-assets' },
-      { name: 'Asset Maintenances', destination: 'maintenances' },
-      { name: 'Deleted Assets', destination: '/hardware/deleted' },
-    ],
-  },
-  { name: 'Source codes', destination: '/source-code', hasChild: false },
-  {
-    name: 'Digital contents',
-    destination: '/digital-content',
-    hasChild: false,
-  },
-  { name: 'Licenses', destination: '/licenses', hasChild: false },
-  { name: 'People', destination: '/users', hasChild: false },
-  {
-    name: 'Import',
-    hasChild: true,
-    menuList: [
-      { name: 'Assets', destination: '/import/asset' },
-      { name: 'Users', destination: '/import/user' },
-    ],
-  },
-  { name: 'Inventory', destination: '/inventory', hasChild: false },
-  {
-    name: 'Settings',
-    hasChild: true,
-    menuList: [
-      { name: 'Statuses', destination: '/statuses' },
-      { name: 'Asset Models', destination: '/models' },
-      { name: 'Categories', destination: '/categories' },
-      { name: 'Manufacturers', destination: '/manufacturers' },
-      { name: 'Suppliers', destination: '/suppliers' },
-      { name: 'Departments', destination: '/departments' },
-      { name: 'Locations', destination: '/locations' },
-      { name: 'Deprecations', destination: '/deprecations' },
-    ],
-  },
-];
+import * as React from "react";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import Menu from "@mui/material/Menu";
+import MenuIcon from "@mui/icons-material/Menu";
+import Container from "@mui/material/Container";
+import Avatar from "@mui/material/Avatar";
+import Tooltip from "@mui/material/Tooltip";
+import MenuItem from "@mui/material/MenuItem";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../../api/auth";
+import { useAuthContext } from "../../context/AuthContext";
+import { toast } from "react-toastify";
+import Notification from "./Notification";
+import HomeIcon from "@mui/icons-material/Home";
+import { MenuItem as MenuItemInterface } from "../../interface/interface";
+import TextField from "@mui/material/TextField";
+import SearchIcon from "@mui/icons-material/Search";
+
 const settings: MenuItemInterface[] = [
-  { name: 'Edit Your Profile', destination: '/account/profile' },
-  { name: 'Change Password', destination: '/account/password' },
-  { name: 'Logout', destination: '/login' },
+  { name: "Edit Your Profile", destination: "/account/profile" },
+  { name: "Change Password", destination: "/account/password" },
+  { name: "Logout", destination: "/login" },
 ];
 
 const Header = () => {
@@ -81,10 +31,10 @@ const Header = () => {
   const { getAuth, authContext } = useAuthContext();
 
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
-    null,
+    null
   );
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
-    null,
+    null
   );
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -105,11 +55,11 @@ const Header = () => {
   const handleClickUserMenu = async (destination: string) => {
     handleCloseUserMenu();
     switch (destination) {
-      case '/login':
+      case "/login":
         try {
           await logout();
           getAuth();
-          navigate('/login');
+          navigate("/login");
         } catch (err: any) {
           console.log(err);
           toast.error(err.response.data.message);
@@ -122,28 +72,68 @@ const Header = () => {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{ backgroundColor: "#ffffff" }}>
       <Container maxWidth="xl">
-        <Toolbar disableGutters>
-          <Typography
-            variant="h6"
-            noWrap
-            component="a"
-            href="/"
+        <Toolbar
+          disableGutters
+          sx={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", flexBasis: "18%" }}>
+            <Box
+              component="a"
+              href="/"
+              sx={{
+                mr: "24px",
+                display: { xs: "none", md: "flex" },
+              }}
+            >
+              <HomeIcon sx={{ fontSize: "30px", color: "#2496ff" }} />
+            </Box>
+            <Typography
+              variant="h6"
+              noWrap
+              component="a"
+              href="/"
+              sx={{
+                mr: 2,
+                display: { xs: "none", md: "flex" },
+                fontFamily: "monospace",
+                fontWeight: 700,
+                letterSpacing: ".3rem",
+                color: "#000000",
+                textDecoration: "none",
+              }}
+            >
+              ITAMS
+            </Typography>
+          </Box>
+
+          <Box sx={{ flexBasis: "75%" }}>
+            <TextField
+              variant="outlined"
+              placeholder="Search..."
+              sx={{
+                width: "500px",
+                "& .MuiOutlinedInput-root": {
+                  height: "40px",
+                },
+              }}
+              InputProps={{
+                startAdornment: <SearchIcon sx={{ color: "gray" }} />,
+              }}
+            />
+          </Box>
+
+          <Box
             sx={{
-              mr: 2,
-              display: { xs: 'none', md: 'flex' },
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
+              flexGrow: 1,
+              flexBasis: "30%",
+              display: { xs: "flex", md: "none" },
             }}
           >
-            ITAMS
-          </Typography>
-
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
               size="large"
               aria-label="account of current user"
@@ -154,22 +144,23 @@ const Header = () => {
             >
               <MenuIcon />
             </IconButton>
-            <Menu
+            {/* <Menu
               id="menu-appbar"
               anchorEl={anchorElNav}
               anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
+                vertical: "bottom",
+                horizontal: "left",
               }}
               keepMounted
               transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
+                vertical: "top",
+                horizontal: "left",
               }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               sx={{
-                display: { xs: 'block', md: 'none' },
+                width: "300px",
+                // display: { xs: "block", md: "block" },
               }}
             >
               {pages.map((page: Page) => (
@@ -183,14 +174,14 @@ const Header = () => {
                     <Typography
                       textTransform="capitalize"
                       textAlign="center"
-                      onClick={() => navigate(page?.destination ?? '')}
+                      onClick={() => navigate(page?.destination ?? "")}
                     >
                       {page.name}
                     </Typography>
                   )}
                 </MenuItem>
               ))}
-            </Menu>
+            </Menu> */}
           </Box>
           <Typography
             variant="h5"
@@ -199,18 +190,18 @@ const Header = () => {
             href=""
             sx={{
               mr: 2,
-              display: { xs: 'flex', md: 'none' },
+              display: { xs: "flex", md: "none" },
               flexGrow: 1,
-              fontFamily: 'monospace',
+              fontFamily: "monospace",
               fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
+              letterSpacing: ".3rem",
+              color: "inherit",
+              textDecoration: "none",
             }}
           >
             ITAMS
           </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          {/* <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page: Page) =>
               page.hasChild ? (
                 <MenuListComposition
@@ -221,27 +212,38 @@ const Header = () => {
               ) : (
                 <Button
                   key={page.name}
-                  onClick={() => navigate(page?.destination ?? '')}
+                  onClick={() => navigate(page?.destination ?? "")}
                   sx={{
                     my: 2,
-                    color: 'white',
-                    display: 'block',
-                    textTransform: 'capitalize',
+                    color: "white",
+                    display: "block",
+                    textTransform: "capitalize",
+                    position: "relative",
+                    "&:hover::after": {
+                      content: '""',
+                      position: "absolute",
+                      bottom: "6px",
+                      left: 0,
+                      width: "100%",
+                      height: "2px",
+                      backgroundColor: "white",
+                    },
                   }}
                 >
                   {page.name}
                 </Button>
-              ),
+              )
             )}
-          </Box>
+          </Box> */}
 
           <Box
             sx={{
               flexGrow: 0,
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: '20px',
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: "20px",
+              ml: "8px",
             }}
           >
             <Notification />
@@ -251,17 +253,17 @@ const Header = () => {
               </IconButton>
             </Tooltip>
             <Menu
-              sx={{ mt: '45px' }}
+              sx={{ mt: "45px" }}
               id="menu-appbar"
               anchorEl={anchorElUser}
               anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+                vertical: "top",
+                horizontal: "right",
               }}
               keepMounted
               transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+                vertical: "top",
+                horizontal: "right",
               }}
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}

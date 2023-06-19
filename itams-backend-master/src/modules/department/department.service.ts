@@ -76,7 +76,7 @@ export class DepartmentService {
 
   async getDepartmentById(id: string) {
     const department = await this.departmentModel.findById(id);
-    return department;
+    return department.toObject();
   }
 
   async getDepartmentByLocationId(id: string) {

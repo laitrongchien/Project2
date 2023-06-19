@@ -1,28 +1,29 @@
-import { NewInventory, UpdateAssetToInventory } from '../interface/interface';
-import axios from './axios';
+import { NewInventory, UpdateAssetToInventory } from "../interface/interface";
+import axios from "./axios";
 
 export const getAllInventories = async () => {
-  const data = await axios.get('/inventory/all');
+  const data = await axios.get("/inventory/all");
+  console.log(data.data);
   return data.data;
 };
 
 export const getInventoryById = async (id: number | string) => {
-  const response = await axios.get('/inventory/get-inventory-by-id', {
+  const response = await axios.get("/inventory/get-inventory-by-id", {
     data: { id },
   });
   return response.data;
 };
 
 export const createNewInventory = async (inventory: NewInventory) => {
-  const response = await axios.post('/inventory/create-inventory', inventory);
+  const response = await axios.post("/inventory/create-inventory", inventory);
   return response.data;
 };
 
 export const updateInventory = async (
   id: number | string,
-  inventory: NewInventory,
+  inventory: NewInventory
 ) => {
-  const response = await axios.put('/inventory/update-inventory', {
+  const response = await axios.put("/inventory/update-inventory", {
     id: id,
     ...inventory,
   });
@@ -30,7 +31,7 @@ export const updateInventory = async (
 };
 
 export const getAssetToInventoryByInventoryId = async (id: number | string) => {
-  const response = await axios.get('/inventory/get-asset-to-inventory', {
+  const response = await axios.get("/inventory/get-asset-to-inventory", {
     params: { id: id },
   });
   return response.data;
@@ -38,9 +39,9 @@ export const getAssetToInventoryByInventoryId = async (id: number | string) => {
 
 export const updateAssetToInventory = async (
   id: number | string,
-  toUpdate: UpdateAssetToInventory,
+  toUpdate: UpdateAssetToInventory
 ) => {
-  const response = await axios.put('/inventory/update-asset-to-inventory', {
+  const response = await axios.put("/inventory/update-asset-to-inventory", {
     id: id,
     ...toUpdate,
   });

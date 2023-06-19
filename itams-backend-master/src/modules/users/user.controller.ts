@@ -55,8 +55,8 @@ export class UserController {
 
   @Post('import-user')
   @UseGuards(JwtAdminAuthGuard)
-  async importUser(@Body() userDto: UserDto[]) {
-    return await this.userService.importUser(userDto);
+  async importUser(@Body() userDtos: UserDto[]) {
+    return await this.userService.importUser(userDtos);
   }
 
   @Put('update-user')

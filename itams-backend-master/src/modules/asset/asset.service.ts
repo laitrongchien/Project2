@@ -274,8 +274,8 @@ export class AssetService {
   }
 
   async importAsset(assetDtos: AssetDto[]) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
+    // const session = await mongoose.startSession();
+    // session.startTransaction();
     try {
       await Promise.all(
         assetDtos.map(async (assetDto: AssetDto) => {
@@ -302,15 +302,16 @@ export class AssetService {
           await asset.save();
         }),
       );
-      await session.commitTransaction();
+      // await session.commitTransaction();
       await this.handleCronAssetDeprecation();
       return assetDtos;
     } catch (err) {
-      await session.abortTransaction();
+      // await session.abortTransaction();
       throw err;
-    } finally {
-      session.endSession();
     }
+    // finally {
+    //   session.endSession();
+    // }
   }
 
   async updateAsset(id: string, assetDto: AssetDto) {
