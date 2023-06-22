@@ -16,5 +16,9 @@ Quản trị viên:
 - Thêm, sửa, xóa tài sản, nhân viên, quản lý các thuộc tính tài sản
 - Cấp phát, thu hồi tài sản của nhân viên, tạo đợt kiểm kê tài sản
 - Import dữ liệu tài sản, nhân viên từ file cũng như export dữ liệu từ hệ thống ra file csv
-- Thông báo tài sản, bản quyền phần mềm sắp hết hạn 
+- Thông báo tài sản, bản quyền phần mềm sắp hết hạn
+
+## Hướng dẫn cài đặt 
+https://docs.google.com/document/d/1m7H3SxXcBpHD-A8Of9ZDgSHyKjDVUmpe/edit
+
 
