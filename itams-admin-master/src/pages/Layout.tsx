@@ -1,13 +1,31 @@
+import { useCallback, useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Header from "../components/header";
 import { Box } from "@mui/material";
 import Sidebar from "../components/sidebar/Sidebar";
 import "../components/sidebar/Sidebar.css";
+import { useLocation } from "react-router-dom";
 
 function Layout() {
+  const { pathname } = useLocation();
+  const [openNav, setOpenNav] = useState(false);
+
+  const handlePathnameChange = useCallback(() => {
+    if (openNav) {
+      setOpenNav(false);
+    }
+  }, [openNav]);
+
+  useEffect(
+    () => {
+      handlePathnameChange();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pathname]
+  );
   return (
     <Box sx={{ maxHeight: "100vh" }}>
-      <Header />
+      <Header onNavOpen={() => setOpenNav(true)} />
       <Box
         sx={{
           display: "flex",
@@ -24,7 +42,7 @@ function Layout() {
             flex: "0 0 auto",
           }}
         >
-          <Sidebar />
+          <Sidebar onClose={() => setOpenNav(false)} open={openNav} />
         </Box>
         <Box
           sx={{

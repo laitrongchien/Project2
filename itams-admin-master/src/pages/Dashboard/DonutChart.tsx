@@ -1,14 +1,18 @@
+import ComputerDesktopIcon from "@heroicons/react/24/solid/ComputerDesktopIcon";
+import DeviceTabletIcon from "@heroicons/react/24/solid/DeviceTabletIcon";
+import PhoneIcon from "@heroicons/react/24/solid/PhoneIcon";
 import {
   Box,
   Card,
   CardContent,
   CardHeader,
   Stack,
+  SvgIcon,
   Typography,
   useTheme,
 } from "@mui/material";
 
-import { Status } from "../../interface/interface";
+import { AssetModel } from "../../interface/interface";
 import { Chart } from "../../components/Chart";
 
 const useChartOptions = (labels: any) => {
@@ -18,11 +22,11 @@ const useChartOptions = (labels: any) => {
     chart: {
       background: "transparent",
     },
-    // colors: [
-    //   theme.palette.primary.main,
-    //   theme.palette.success.main,
-    //   theme.palette.warning.main,
-    // ],
+    colors: [
+      theme.palette.primary.main,
+      theme.palette.success.main,
+      theme.palette.warning.main,
+    ],
     dataLabels: {
       enabled: true,
     },
@@ -59,22 +63,42 @@ const useChartOptions = (labels: any) => {
   };
 };
 
-export const PieChart = (props: any) => {
+const iconMap: { [key: string]: React.ReactElement } = {
+  Desktop: (
+    <SvgIcon>
+      <ComputerDesktopIcon />
+    </SvgIcon>
+  ),
+  Tablet: (
+    <SvgIcon>
+      <DeviceTabletIcon />
+    </SvgIcon>
+  ),
+  Phone: (
+    <SvgIcon>
+      <PhoneIcon />
+    </SvgIcon>
+  ),
+};
+
+export const DonutChart = (props: any) => {
   const { data, sx } = props; // Destructure the correct props
 
-  const chartSeries = data.map((status: Status) => status.numOfAssets);
-  const labels = data.map((status: Status) => status.name);
+  const chartSeries = data.map(
+    (assetModel: AssetModel) => assetModel.numOfAssets
+  );
+  const labels = data.map((assetModel: AssetModel) => assetModel.name);
   const chartOptions = useChartOptions(labels);
 
   return (
     <Card sx={sx}>
-      <CardHeader title="Asset By Status" />
+      <CardHeader title="Asset By Asset Model" />
       <CardContent>
         <Chart
           height={300}
           options={chartOptions}
           series={chartSeries}
-          type="pie"
+          type="donut"
           width="100%"
         />
         <Stack
@@ -96,9 +120,20 @@ export const PieChart = (props: any) => {
                   alignItems: "center",
                 }}
               >
-                {/* <Typography sx={{ my: 1, fontSize: "16px" }} variant="h6">
+                <span
+                  style={{
+                    backgroundColor: chartOptions.colors[index],
+                    borderRadius: "50%",
+                    display: "inline-block",
+                    height: "8px",
+                    width: "8px",
+                    marginRight: "10px",
+                  }}
+                />
+                {iconMap[label]}
+                <Typography sx={{ my: 1, fontSize: "16px" }} variant="h6">
                   {label}
-                </Typography> */}
+                </Typography>
               </Box>
             )
           )}

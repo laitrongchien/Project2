@@ -26,26 +26,18 @@ const settings: MenuItemInterface[] = [
   { name: "Logout", destination: "/login" },
 ];
 
-const Header = () => {
+const Header = (props: any) => {
   const navigate = useNavigate();
   const { getAuth, authContext } = useAuthContext();
 
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
-    null
-  );
+  const { onNavOpen } = props;
+
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
     null
   );
 
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
   };
 
   const handleCloseUserMenu = () => {
@@ -79,15 +71,32 @@ const Header = () => {
           sx={{
             display: "flex",
             alignItems: "center",
+            justifyContent: { xs: "space-between", md: "flex-start" },
           }}
         >
+          <Box
+            sx={{
+              display: { xs: "flex", md: "none" },
+            }}
+          >
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={onNavOpen}
+              color="primary"
+            >
+              <MenuIcon />
+            </IconButton>
+          </Box>
           <Box sx={{ display: "flex", alignItems: "center", flexBasis: "18%" }}>
             <Box
               component="a"
               href="/"
               sx={{
                 mr: "24px",
-                display: { xs: "none", md: "flex" },
+                display: "flex",
               }}
             >
               <HomeIcon sx={{ fontSize: "30px", color: "#2496ff" }} />
@@ -99,7 +108,7 @@ const Header = () => {
               href="/"
               sx={{
                 mr: 2,
-                display: { xs: "none", md: "flex" },
+                display: "flex",
                 fontFamily: "monospace",
                 fontWeight: 700,
                 letterSpacing: ".3rem",
@@ -111,7 +120,7 @@ const Header = () => {
             </Typography>
           </Box>
 
-          <Box sx={{ flexBasis: "75%" }}>
+          <Box sx={{ flexBasis: "75%", display: { xs: "none", md: "flex" } }}>
             <TextField
               variant="outlined"
               placeholder="Search..."
@@ -126,115 +135,6 @@ const Header = () => {
               }}
             />
           </Box>
-
-          <Box
-            sx={{
-              flexGrow: 1,
-              flexBasis: "30%",
-              display: { xs: "flex", md: "none" },
-            }}
-          >
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
-            >
-              <MenuIcon />
-            </IconButton>
-            {/* <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "left",
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{
-                width: "300px",
-                // display: { xs: "block", md: "block" },
-              }}
-            >
-              {pages.map((page: Page) => (
-                <MenuItem
-                  key={page.name}
-                  disableRipple={page.hasChild ? true : false}
-                >
-                  {page.hasChild ? (
-                    <NestedList data={page} />
-                  ) : (
-                    <Typography
-                      textTransform="capitalize"
-                      textAlign="center"
-                      onClick={() => navigate(page?.destination ?? "")}
-                    >
-                      {page.name}
-                    </Typography>
-                  )}
-                </MenuItem>
-              ))}
-            </Menu> */}
-          </Box>
-          <Typography
-            variant="h5"
-            noWrap
-            component="a"
-            href=""
-            sx={{
-              mr: 2,
-              display: { xs: "flex", md: "none" },
-              flexGrow: 1,
-              fontFamily: "monospace",
-              fontWeight: 700,
-              letterSpacing: ".3rem",
-              color: "inherit",
-              textDecoration: "none",
-            }}
-          >
-            ITAMS
-          </Typography>
-          {/* <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-            {pages.map((page: Page) =>
-              page.hasChild ? (
-                <MenuListComposition
-                  menuList={page.menuList}
-                  name={page.name}
-                  key={page.name}
-                />
-              ) : (
-                <Button
-                  key={page.name}
-                  onClick={() => navigate(page?.destination ?? "")}
-                  sx={{
-                    my: 2,
-                    color: "white",
-                    display: "block",
-                    textTransform: "capitalize",
-                    position: "relative",
-                    "&:hover::after": {
-                      content: '""',
-                      position: "absolute",
-                      bottom: "6px",
-                      left: 0,
-                      width: "100%",
-                      height: "2px",
-                      backgroundColor: "white",
-                    },
-                  }}
-                >
-                  {page.name}
-                </Button>
-              )
-            )}
-          </Box> */}
 
           <Box
             sx={{

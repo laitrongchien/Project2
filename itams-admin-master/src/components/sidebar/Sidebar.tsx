@@ -1,12 +1,26 @@
-import { Drawer, List, Stack, Toolbar } from "@mui/material";
+import {
+  Drawer,
+  List,
+  Stack,
+  Toolbar,
+  useMediaQuery,
+  Theme,
+} from "@mui/material";
 import pages from "./config";
 import SidebarItemCollapse from "./SidebarItemCollapse";
 import SidebarItem from "./SidebarItem";
 
-function Sidebar() {
+function Sidebar(props: any) {
+  const { open, onClose } = props;
+  const isLgScreen = useMediaQuery("(min-width: 900px)");
+  // console.log(isLgScreen);
+
   return (
     <Drawer
-      variant="permanent"
+      anchor="left"
+      variant={isLgScreen ? "permanent" : "temporary"}
+      open={isLgScreen ? true : open}
+      onClose={isLgScreen ? undefined : onClose}
       sx={{
         width: "240px",
         flexShrink: 0,
@@ -21,15 +35,6 @@ function Sidebar() {
       }}
     >
       <List disablePadding>
-        {/* <Toolbar sx={{ marginBottom: "20px" }}>
-            <Stack
-              sx={{ width: "100%" }}
-              direction="row"
-              justifyContent="center"
-            >
-              <Avatar src={assets.images.logo} />
-            </Stack>
-          </Toolbar> */}
         {pages.map((page, index) =>
           page.hasChild ? (
             <SidebarItemCollapse data={page} key={page.name} />

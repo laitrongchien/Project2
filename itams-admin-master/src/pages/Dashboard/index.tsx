@@ -8,6 +8,7 @@ import { getAllSourceCodes } from "../../api/sourceCode";
 import { getAllStatuses } from "../../api/status";
 import { getAllUsers } from "../../api/user";
 import Analytic from "../../components/Analytic";
+
 import PageHeader from "../../components/PageHeader";
 import ComputerIcon from "@mui/icons-material/Computer";
 import SourceIcon from "@mui/icons-material/Source";
@@ -26,7 +27,9 @@ import {
   AssetModel,
 } from "../../interface/interface";
 import DepartmentTable from "./DepartmentTable";
-import PieChart from "./PieChart";
+import { PieChart } from "./PieChart";
+import { DonutChart } from "./DonutChart";
+import { ColumnChart } from "./ColumnChart";
 
 function Dashboard() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -124,13 +127,55 @@ function Dashboard() {
       >
         <DepartmentTable />
       </Box>
-      {!isLoading && (
-        <PieChart
-          data={statuses.map((status: Status) => {
-            return { country: status.name, area: status.numOfAssets };
-          })}
-        />
-      )}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "12px",
+          flexWrap: "wrap",
+          marginBottom: "24px",
+        }}
+      >
+        {!isLoading && (
+          <PieChart
+            data={statuses}
+            sx={{
+              height: "100%",
+              minHeight: "450px",
+              width: { xs: "100%", md: "48%" },
+            }}
+          />
+        )}
+        {!isLoading && (
+          <DonutChart
+            data={assetModels}
+            sx={{
+              height: "100%",
+              minHeight: "450px",
+              width: { xs: "100%", md: "48%" },
+            }}
+          />
+        )}
+      </Box>
+      <Box>
+        {!isLoading && (
+          <ColumnChart
+            chartSeries={[
+              {
+                name: "This year",
+                data: [18, 16, 5, 8, 3, 14, 14, 16, 17, 19, 18, 20],
+              },
+              {
+                name: "Last year",
+                data: [12, 11, 4, 6, 2, 9, 9, 10, 11, 12, 13, 13],
+              },
+            ]}
+            sx={{ height: "100%" }}
+          />
+        )}
+      </Box>
     </Box>
   );
 }
