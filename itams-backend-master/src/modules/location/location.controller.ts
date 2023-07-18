@@ -32,7 +32,7 @@ export class LocationController {
   }
 
   @Post('create-location')
-  @UseGuards(JwtAdminAuthGuard)
+  // @UseGuards(JwtAdminAuthGuard)
   async createLocation(@Body() locationDto: LocationDto) {
     return await this.locationService.createNewLocation(locationDto);
   }

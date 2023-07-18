@@ -27,15 +27,14 @@ export const Modules = [
     // envFilePath: '.env',
     isGlobal: true,
   }),
-  // TypeOrmModule.forRoot({
-  //   type: 'mongodb',
-  //   url: 'mongodb+srv://chienlai01:4gylK09ug86kgUm6@cluster0.rtqhapw.mongodb.net/itams?retryWrites=true&w=majority',
-  //   entities: [__dirname + '/models/entities/**/*{.ts,.js}'],
-  //   synchronize: true,
-  // }),
+
   MongooseModule.forRoot(
     'mongodb+srv://chienlai01:4gylK09ug86kgUm6@cluster0.rtqhapw.mongodb.net/itams?retryWrites=true&w=majority',
   ),
+
+  // MongooseModule.forRoot(
+  //   `mongodb://${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
+  // ),
   ScheduleModule.forRoot(),
   AuthModule,
   UsersModule,

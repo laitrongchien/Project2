@@ -1,35 +1,35 @@
-import * as React from 'react';
-import { alpha } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import { visuallyHidden } from '@mui/utils';
-import { getAsset } from '../../api/asset';
-import Actions from '../../components/Actions';
-import { toast } from 'react-toastify';
+import * as React from "react";
+import { alpha } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TablePagination from "@mui/material/TablePagination";
+import TableRow from "@mui/material/TableRow";
+import TableSortLabel from "@mui/material/TableSortLabel";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import Checkbox from "@mui/material/Checkbox";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+import DeleteIcon from "@mui/icons-material/Delete";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import { visuallyHidden } from "@mui/utils";
+import { getAsset } from "../../api/asset";
+import Actions from "../../components/Actions";
+import { toast } from "react-toastify";
 
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import { getPref, Prefs, setPref } from '../../prefs';
-import { Asset } from '../../interface/interface';
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import { getPref, Prefs, setPref } from "../../prefs";
+import { Asset } from "../../interface/interface";
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -41,16 +41,16 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   return 0;
 }
 
-type Order = 'asc' | 'desc';
+type Order = "asc" | "desc";
 
 function getComparator<Key extends keyof any>(
   order: Order,
-  orderBy: Key,
+  orderBy: Key
 ): (
   a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string },
+  b: { [key in Key]: number | string }
 ) => number {
-  return order === 'desc'
+  return order === "desc"
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
@@ -59,7 +59,7 @@ function getComparator<Key extends keyof any>(
 // need to support IE11, you can use Array.prototype.sort() directly
 function stableSort<T>(
   array: readonly T[],
-  comparator: (a: T, b: T) => number,
+  comparator: (a: T, b: T) => number
 ) {
   const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
   stabilizedThis.sort((a, b) => {
@@ -81,47 +81,47 @@ interface HeadCell {
 
 const headCells: readonly HeadCell[] = [
   {
-    id: 'id',
+    id: "id",
     numeric: false,
     disablePadding: true,
-    label: 'ID',
+    label: "ID",
   },
   {
-    id: 'name',
+    id: "name",
     numeric: false,
     disablePadding: false,
-    label: 'Name',
+    label: "Name",
   },
   {
-    id: 'image',
+    id: "image",
     numeric: false,
     disablePadding: false,
-    label: 'Image',
+    label: "Image",
   },
   {
-    id: 'assetModel',
+    id: "assetModel",
     numeric: false,
     disablePadding: false,
-    label: 'Model',
+    label: "Model",
   },
   {
-    id: 'department',
+    id: "department",
     numeric: false,
     disablePadding: false,
-    label: 'Department',
+    label: "Department",
   },
   {
-    id: 'supplier',
+    id: "supplier",
     numeric: false,
     disablePadding: false,
-    label: 'Supplier',
+    label: "Supplier",
   },
 
   {
-    id: 'status',
+    id: "status",
     numeric: false,
     disablePadding: false,
-    label: 'Status',
+    label: "Status",
   },
 ];
 
@@ -129,7 +129,7 @@ interface EnhancedTableProps {
   numSelected: number;
   onRequestSort: (
     event: React.MouseEvent<unknown>,
-    property: keyof Asset,
+    property: keyof Asset
   ) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
   order: Order;
@@ -153,7 +153,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
   return (
     <TableHead>
-      <TableRow sx={{ backgroundColor: '#FFF !important' }}>
+      <TableRow sx={{ backgroundColor: "#FFF !important" }}>
         <TableCell padding="checkbox">
           <Checkbox
             color="primary"
@@ -161,27 +161,27 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
             inputProps={{
-              'aria-label': 'select all desserts',
+              "aria-label": "select all desserts",
             }}
           />
         </TableCell>
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
-            align={headCell.numeric ? 'right' : 'left'}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
+            align={headCell.numeric ? "right" : "left"}
+            padding={headCell.disablePadding ? "none" : "normal"}
             sortDirection={orderBy === headCell.id ? order : false}
-            sx={{ fontWeight: '700' }}
+            sx={{ fontWeight: "700" }}
           >
             <TableSortLabel
               active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
+              direction={orderBy === headCell.id ? order : "asc"}
               onClick={createSortHandler(headCell.id)}
             >
               {headCell.label}
               {orderBy === headCell.id ? (
                 <Box component="span" sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                  {order === "desc" ? "sorted descending" : "sorted ascending"}
                 </Box>
               ) : null}
             </TableSortLabel>
@@ -209,7 +209,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           bgcolor: (theme) =>
             alpha(
               theme.palette.primary.main,
-              theme.palette.action.activatedOpacity,
+              theme.palette.action.activatedOpacity
             ),
         }),
       }}
@@ -217,7 +217,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       {
         numSelected > 0 && (
           <Typography
-            sx={{ flex: '1 1 100%' }}
+            sx={{ flex: "1 1 100%" }}
             color="inherit"
             variant="subtitle1"
             component="div"
@@ -254,21 +254,21 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 }
 
 export default function AssetTable() {
-  const [order, setOrder] = React.useState<Order>('asc');
-  const [orderBy, setOrderBy] = React.useState<keyof Asset>('id');
-  const [selected, setSelected] = React.useState<readonly number[]>([]);
+  const [order, setOrder] = React.useState<Order>("asc");
+  const [orderBy, setOrderBy] = React.useState<keyof Asset>("id");
+  const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(
     Number(getPref(Prefs.ROWS_PER_PAGE)) === 0
       ? 5
-      : Number(getPref(Prefs.ROWS_PER_PAGE)),
+      : Number(getPref(Prefs.ROWS_PER_PAGE))
   );
   const [rows, setRows] = React.useState<Asset[]>([]);
 
   const [open, setOpen] = React.useState(false);
-  const [idToDelete, setIdToDelete] = React.useState<number>(0);
-  const handleClickOpen = (id: number) => {
+  const [idToDelete, setIdToDelete] = React.useState<string>("");
+  const handleClickOpen = (id: string) => {
     setOpen(true);
     setIdToDelete(id);
   };
@@ -291,13 +291,13 @@ export default function AssetTable() {
     getData();
   }, []);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
       // await deleteAsset(id);
       // handleClose();
       // await getAssets();
       // setIdToDelete(0);
-      toast.success('Deleted');
+      toast.success("Deleted");
     } catch (err: any) {
       console.log(err);
       toast.error(err.response.data.message);
@@ -306,10 +306,10 @@ export default function AssetTable() {
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
-    property: keyof Asset,
+    property: keyof Asset
   ) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
@@ -322,9 +322,9 @@ export default function AssetTable() {
     setSelected([]);
   };
 
-  const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
+  const handleClick = (event: React.MouseEvent<unknown>, id: string) => {
     const selectedIndex = selected.indexOf(id);
-    let newSelected: readonly number[] = [];
+    let newSelected: readonly string[] = [];
 
     if (selectedIndex === -1) {
       newSelected = newSelected.concat(selected, id);
@@ -335,7 +335,7 @@ export default function AssetTable() {
     } else if (selectedIndex > 0) {
       newSelected = newSelected.concat(
         selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
+        selected.slice(selectedIndex + 1)
       );
     }
 
@@ -347,28 +347,28 @@ export default function AssetTable() {
   };
 
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPref(Prefs.ROWS_PER_PAGE, event.target.value);
     setPage(0);
   };
 
-  const isSelected = (id: number) => selected.indexOf(id) !== -1;
+  const isSelected = (id: string) => selected.indexOf(id) !== -1;
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Paper sx={{ width: '100%', mb: 2 }}>
+    <Box sx={{ width: "100%" }}>
+      <Paper sx={{ width: "100%", mb: 2 }}>
         <EnhancedTableToolbar numSelected={selected.length} />
         <TableContainer>
           <Table
             sx={{
               minWidth: 750,
-              'tr:nth-child(2n+1)': { backgroundColor: '#f8f8f8' },
+              "tr:nth-child(2n+1)": { backgroundColor: "#f8f8f8" },
             }}
             aria-labelledby="tableTitle"
             size="medium"
@@ -405,7 +405,7 @@ export default function AssetTable() {
                           color="primary"
                           checked={isItemSelected}
                           inputProps={{
-                            'aria-labelledby': labelId,
+                            "aria-labelledby": labelId,
                           }}
                           onClick={(event) => handleClick(event, row.id)}
                         />
@@ -422,7 +422,7 @@ export default function AssetTable() {
                       <TableCell align="left">
                         <img
                           src={row.image}
-                          style={{ maxHeight: '40px' }}
+                          style={{ maxHeight: "40px" }}
                         ></img>
                       </TableCell>
                       <TableCell align="left">{row.assetModel}</TableCell>
@@ -431,18 +431,18 @@ export default function AssetTable() {
                       <TableCell align="left">
                         <Box
                           sx={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: '5px',
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: "5px",
                           }}
                         >
                           <Box
                             sx={{
-                              width: '30px',
-                              height: '30px',
+                              width: "30px",
+                              height: "30px",
                               backgroundColor: row.statusColor,
-                              borderRadius: '50%',
+                              borderRadius: "50%",
                             }}
                           ></Box>
                           {row.status}
@@ -503,7 +503,7 @@ export default function AssetTable() {
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
-          <DialogTitle id="alert-dialog-title">{'Delete'}</DialogTitle>
+          <DialogTitle id="alert-dialog-title">{"Delete"}</DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
               Are you sure you wish to delete ?

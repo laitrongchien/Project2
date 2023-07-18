@@ -1,30 +1,30 @@
 export interface AssetModel {
-  id: number;
+  id: string;
   name: string;
 }
 
 export interface Department {
-  id: number;
+  id: string;
   name: string;
 }
 
 export interface Status {
-  id: number;
+  id: string;
   name: string;
 }
 
 export interface Supplier {
-  id: number;
+  id: string;
   name: string;
 }
 
 export interface Category {
-  id: number;
+  id: string;
   name: string;
 }
 
 export interface Asset {
-  id: number;
+  id: string;
   name: string;
   image: string;
   assetModel: string;
@@ -35,7 +35,7 @@ export interface Asset {
 }
 
 export interface RequestAsset {
-  id: number;
+  id: string;
   category: string;
   date: string;
   status: string;
@@ -43,13 +43,13 @@ export interface RequestAsset {
 }
 
 export enum RequestAssetStatus {
-  REQUESTED = 'Requested',
-  REJECTED = 'Rejected',
-  ACCEPTED = 'Accepted',
+  REQUESTED = "Requested",
+  REJECTED = "Rejected",
+  ACCEPTED = "Accepted",
 }
 
 export interface NewRequestAsset {
-  categoryId: number;
+  categoryId: string;
   note: string;
 }
 
