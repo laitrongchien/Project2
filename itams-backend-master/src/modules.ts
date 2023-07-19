@@ -29,7 +29,7 @@ export const Modules = [
   }),
 
   MongooseModule.forRoot(
-    'mongodb+srv://chienlai01:4gylK09ug86kgUm6@cluster0.rtqhapw.mongodb.net/itams?retryWrites=true&w=majority',
+    'mongodb+srv://<USERNAME>:<PASSWORD>@cluster0.rtqhapw.mongodb.net/itams?retryWrites=true&w=majority',
   ),
 
   // MongooseModule.forRoot(
